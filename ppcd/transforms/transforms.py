@@ -8,7 +8,7 @@ import math
 from PIL import Image
 from collections import OrderedDict
 from functools import reduce
-import functional as func
+from ppcd.transforms import functional as func
 
 
 # ----- compose -----

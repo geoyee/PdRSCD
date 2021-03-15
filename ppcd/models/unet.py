@@ -1,7 +1,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddleseg.models import layers
+from ppcd.models import layers
 
 
 class UNet(nn.Layer):

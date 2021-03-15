@@ -1,7 +1,7 @@
 import paddle
 from paddle import nn
 import paddle.nn.functional as F
-from paddleseg.models import layers
+from ppcd.models import layers
 
 
 class PPModule(nn.Layer):
