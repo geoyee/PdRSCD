@@ -9,47 +9,26 @@ from PIL import Image
 
 
 # 根据图像类型读取图像
-def read_img(img_path, npd_shape):
+def read_img(img_path, npd_shape, is_lab):
     img_format = imghdr.what(img_path)
     _, ext = os.path.splitext(img_path)
-    # 读取数据
     if img_format == 'tiff' or ext == '.img':
         img_data = gdal.Open(img_path).ReadAsArray()
-        return img_data.transpose((1, 2, 0))  # 多波段图像默认是[C, H, W]
+        return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[C, H, W]
     elif ext == '.npy' or ext == '.npz':
         npy_data = np.load(img_path)
         if npd_shape == "HWC":
-            return npy_data
+            return npy_data.astype('float32')
         else:
-            return npy_data.transpose((1, 2, 0))
-    elif img_format == 'jpeg':
-        jpg_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
-        return jpg_data
-    # 读取标签
-    elif img_format == 'png':
-        img_lab = np.asarray(Image.open(img_path))
-        if len(img_lab.shape) == 2:
-            img_lab = img_lab.reshape((img_lab.shape[0], img_lab.shape[1], 1))
-        return img_lab
+            return npy_data.transpose((1, 2, 0)).astype('float32')
+    elif img_format == 'jpeg' or img_format == 'png':
+        if is_lab:
+            jp_data = np.asarray(Image.open(img_path))
+        else:
+            jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+        return jp_data.astype('float32')
     else:
         raise Exception('Not support {} image format!'.format(ext))
-
-
-# 显示图像
-def show_img(img):
-    if len(img.shape) == 2:
-        img = img.reshape((img.shape[0], img.shape[1], 1))
-    c = img.shape[-1]
-    im_show = []
-    for i in range(c):
-        i_max = np.max(np.max(img[:, :, i]))
-        i_min = np.min(np.min(img[:, :, i]))
-        i_show = (img[:, :, i] - i_min) / (i_max - i_min + 1e-12)
-        i_show *= 255.
-        i_show = np.uint8(i_show)
-        im_show.append(i_show)
-    im_show = np.array(im_show).transpose((1, 2, 0))
-    return im_show
 
 
 # 标准化
@@ -81,8 +60,10 @@ def rotate_img(img, ang, ig_pix=None):
     height, width = img.shape[:2]
     matRotate = cv2.getRotationMatrix2D((width * 0.5, height * 0.5), ang, 1)
     if ig_pix is not None:
-        ig_pix = [ig_pix] * 3
-    img = cv2.warpAffine(img, matRotate, (width, height), borderValue=ig_pix)
+        ig_pix = [ig_pix]
+    img = cv2.warpAffine(img, matRotate, (width, height), flags=cv2.INTER_NEAREST, borderValue=ig_pix)
+    if img.shape == 2:
+        img = img.reshape(height, width, 1)
     return img
 
 

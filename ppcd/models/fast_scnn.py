@@ -62,7 +62,7 @@ class FastSCNN(nn.Layer):
                 mode='bilinear',
                 align_corners=self.align_corners)
             logit_list.append(auxiliary_logit)
-        return logit_list
+        return logit_list[0]
 
 
 class LearningToDownsample(nn.Layer):

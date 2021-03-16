@@ -39,7 +39,7 @@ class UNet(nn.Layer):
         x = self.decode(x, short_cuts)
         logit = self.cls(x)
         logit_list.append(logit)
-        return logit_list
+        return logit_list[0]
 
 
 class Encoder(nn.Layer):

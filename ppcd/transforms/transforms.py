@@ -21,8 +21,6 @@ class Compose:
         npd_shape ("HWC"/"CHW"): 如果数据是npy/npz格式，数据形状如何，默认为"HWC"
     """
     def __init__(self, transforms=None, npd_shape="HWC"):
-        if not isinstance(transforms, list) or transforms is not None:
-            raise TypeError('The transforms must be a list or None!')
         if npd_shape != "HWC" and npd_shape != "CHW":
             raise ValueError('The npd_shape must be "HWC" or "CHW"!')
         self.transforms = transforms
@@ -34,21 +32,18 @@ class Compose:
             B_img (str): 时段二图像路径 (.tif/.img/.npy/.jpg)
             label (str): 标注图像路径 (.png)，默认为None
         """
-        A_img = func.read_img(A_img, self.npd_shape)
-        B_img = func.read_img(B_img, self.npd_shape)
+        A_img = func.read_img(A_img, self.npd_shape, False)
+        B_img = func.read_img(B_img, self.npd_shape, False)
         if label is not None:
-            label = func.read_img(label, self.npd_shape)
+            label = func.read_img(label, self.npd_shape, True)
         # 数据增强
         if self.transforms is not None:
             for op in self.transforms:
-                outputs = op(A_img, B_img, label)
-                A_img = outputs[0]
-                B_img = outputs[1]
-                label = outputs[2]
+                A_img, B_img, label = op(A_img, B_img, label)
         if label is None:
-            return (outputs[0], outputs[1])
+            return (A_img, B_img)
         else:
-            return outputs
+            return (A_img, B_img, label.astype('int64'))
 
 
 # ----- transforms -----
@@ -279,8 +274,8 @@ class RandomSharpening:
         self.kernel = self.laplacian_dict[laplacian_mode]
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
-            A_img[:, :, :self.band_num] += cv2.filter2D(A_img[:, :, :self.band_num], -1, kernel=self.kernel)
-            B_img[:, :, :self.band_num] += cv2.filter2D(B_img[:, :, :self.band_num], -1, kernel=self.kernel)
+            A_img[:, :, :self.band_num] += (0.2 * cv2.filter2D(A_img[:, :, :self.band_num], -1, kernel=self.kernel))
+            B_img[:, :, :self.band_num] += (0.2 * cv2.filter2D(B_img[:, :, :self.band_num], -1, kernel=self.kernel))
         return (A_img, B_img, label)
 
 
@@ -409,9 +404,9 @@ class RandomRemoveBand:
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
         if not(isinstance(kill_bands, list)) and kill_bands != None:
-            raise ValueError('kill_bands is list or None.')
+            raise ValueError('kill_bands must be list or None.')
         if not(isinstance(keep_bands, list)) and keep_bands != None:
-            raise ValueError('keep_bands is list or None.')
+            raise ValueError('keep_bands must be list or None.')
         self.prob = prob
         self.kill_bands = [] if kill_bands == None else list(kill_bands)
         self.keep_bands = [] if keep_bands == None else list(keep_bands)
