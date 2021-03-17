@@ -70,11 +70,11 @@ def Train(model,
                         losses=losses)
                     val_loss = sum(val_loss_list)
                     val_losses.append(val_loss.numpy())
-                    val_miou, val_acc, val_kappa = ComputAccuracy(paddle.argmax(val_pred_list[0], axis=1), lab)
+                    val_miou, val_acc, val_kappa = ComputAccuracy(paddle.argmax(val_pred_list[-1], axis=1), lab)
                     val_mious.append(val_miou)
                     val_accs.append(val_acc)
                     val_kappas.append(val_kappa)
-                print("[Eval] epoch: {}, loss: {}, miou: {}, acc: {}, kappa: {}" \
+                print("[Eval] epoch: {}, loss: {}, miou: {:.4f}, acc: {:.4f}, kappa: {:.4f}" \
                       .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
                       np.mean(val_accs), np.mean(val_kappas)))
                 paddle.save(model.state_dict(), os.path.join(save_model_path, 'epoch_' + str(epoch_id)) + '.pdparams')
