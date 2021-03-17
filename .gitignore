@@ -1,7 +1,3 @@
 .vscode
 __pycache__
-test_dataset
-test_model_save
-test_image_save
-test.py
 

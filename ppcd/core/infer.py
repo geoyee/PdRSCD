@@ -17,7 +17,7 @@ def Infer(model,
     model.eval()
     para_state_dict = paddle.load(params_path)
     model.set_dict(para_state_dict)
-    for idx, (A_img, B_img, _) in enumerate(infer_loader()):
+    for idx, (A_img, B_img) in enumerate(infer_loader()):
         pred_list = model(A_img, B_img)
         for idx2, pred in enumerate(pred_list):
             save_img = (paddle.argmax(pred, axis=1).squeeze().numpy() * 255).astype('uint8')

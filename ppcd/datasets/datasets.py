@@ -14,8 +14,11 @@ def create_list(dataset_path, mode='train'):
         for A_img_name in A_imgs_name:
             A_img = os.path.join(A_path, A_img_name)
             B_img = os.path.join(A_path.replace('A', 'B'), A_img_name)
-            label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
-            f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
+            if mode != 'infer':
+                label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
+                f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
+            else:
+                f.write(A_img + ' ' + B_img + '\n')
     print(mode + '_data_list generated')
     return save_path
 
