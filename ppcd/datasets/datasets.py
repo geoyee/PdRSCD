@@ -46,7 +46,7 @@ class CDataset(Dataset):
         if self.is_test:
             return A_img, B_img
         else:
-            lab = paddle.to_tensor(lab[np.newaxis, :, :])
+            lab = paddle.to_tensor(lab[np.newaxis, :, :] / 255, dtype='int64')
             return A_img, B_img, lab
     def __len__(self):
         return self.lens

@@ -52,7 +52,7 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
     return intersect_area, pred_area, label_area
 
 
-def mean_iou(intersect_area, pred_area, label_area):
+def get_mean_iou(intersect_area, pred_area, label_area):
     """
     Calculate iou.
     Args:
@@ -78,7 +78,7 @@ def mean_iou(intersect_area, pred_area, label_area):
     return np.array(class_iou), miou
 
 
-def accuracy(intersect_area, pred_area):
+def get_accuracy(intersect_area, pred_area):
     """
     Calculate accuracy
     Args:
@@ -101,7 +101,7 @@ def accuracy(intersect_area, pred_area):
     return np.array(class_acc), macc
 
 
-def kappa(intersect_area, pred_area, label_area):
+def get_kappa(intersect_area, pred_area, label_area):
     """
     Calculate kappa coefficient
     Args:
@@ -120,3 +120,11 @@ def kappa(intersect_area, pred_area, label_area):
     pe = np.sum(pred_area * label_area) / (total_area * total_area)
     kappa = (po - pe) / (1 - pe)
     return kappa
+
+
+def ComputAccuracy(preds, labs, num_classes=2, ignore_index=255):
+    intersect_area, pred_area, label_area = calculate_area(preds, labs, num_classes, ignore_index)
+    class_iou, miou = get_mean_iou(intersect_area, pred_area, label_area)
+    class_acc, acc = get_accuracy(intersect_area, pred_area)
+    kappa = get_kappa(intersect_area, pred_area, label_area)
+    return miou, acc, kappa

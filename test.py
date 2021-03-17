@@ -1,33 +1,41 @@
+import paddle
 from ppcd.datasets import create_list, CDataset
-from paddle.io import DataLoader
 import ppcd.transforms as T
-from ppcd.models import UNet, FastSCNN
+from ppcd.models import FastSCNN
 from ppcd.losses import BCELoss
 from paddle.optimizer import Adam
+from ppcd.core import Train, Infer
 
-# 数据读取器测试
+# 数据
 dataset_path = "E:/dataFiles/gitee/pd-rscd/test_dataset"
 val_path = create_list(dataset_path, mode='val')
 transforms = [T.RandomBlur(), T.RandomColor(), T.RandomEnlarge(), T.RandomFlip(), \
               T.RandomFog(), T.RandomNarrow(), T.RandomRotate(), T.RandomSharpening(), \
-              T.RandomSplicing(), T.RandomStrip(), T.Resize(512), T.Normalize([127.5] * 3, [127.5] * 3), \
-              T.RandomRemoveBand(kill_bands=[1])]
+              T.RandomSplicing(), T.RandomStrip(), T.Resize(128), T.Normalize([127.5] * 3, [127.5] * 3)]
 val_data = CDataset(val_path, transforms=transforms)
-val_loader = DataLoader(val_data, batch_size=8, shuffle=True)
 
 # 网络
-model = FastSCNN()  # UNet()
-model.train()
-bce_loss = BCELoss()
-opt = Adam(parameters=model.parameters())
-epoch = 5
+model = FastSCNN(enable_auxiliary_loss=False)
+bce_loss = {}
+bce_loss['types'] = [BCELoss()]
+bce_loss['coef'] = [1]
+opt = Adam(learning_rate=3e-4, parameters=model.parameters(), weight_decay=0.0001)
 
 # 训练
-for epoch_id in range(epoch):
-    for batch_id, (img1, img2, lab) in enumerate(val_loader()):
-        pred = model(img1, img2)
-        loss = bce_loss(pred, lab)
-        loss.backward()
-        opt.step()
-        opt.clear_grad()
-        print("[Train] epoch: {}, batch: {}, loss: {}".format(epoch_id, batch_id, loss.numpy()))
+Train(model=model,
+      epoch=10,
+      batch_size=8,
+      train_data=val_data,
+      eval_data=val_data,
+      optimizer=opt,
+      losses=bce_loss,
+      save_model_path="E:/dataFiles/gitee/pd-rscd/test_model_save",
+      log_batch=1
+  )
+
+# 预测
+Infer(model=model,
+      infer_data=val_data,
+      params_path="E:/dataFiles/gitee/pd-rscd/test_model_save/epoch_9.pdparams",
+      save_img_path="E:/dataFiles/gitee/pd-rscd/test_image_save"
+  )
