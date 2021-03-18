@@ -56,7 +56,7 @@ def Train(model,
             optimizer.step()
             optimizer.clear_grad()
             if (batch_id + 1) % log_batch == 0:
-                print("[Train] epoch: {}, batch: {}, loss: {}".format(epoch_id + 1, batch_id + 1, loss.numpy()))
+                print("[Train] epoch: {}, batch: {}, loss: {:.4f}".format(epoch_id + 1, batch_id + 1, loss.numpy()))
             if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)):
                 val_losses = []
                 val_mious = []
@@ -74,7 +74,7 @@ def Train(model,
                     val_mious.append(val_miou)
                     val_accs.append(val_acc)
                     val_kappas.append(val_kappa)
-                print("[Eval] epoch: {}, loss: {}, miou: {:.4f}, acc: {:.4f}, kappa: {:.4f}" \
+                print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, acc: {:.4f}, kappa: {:.4f}" \
                       .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
                       np.mean(val_accs), np.mean(val_kappas)))
                 paddle.save(model.state_dict(), os.path.join(save_model_path, 'epoch_' + str(epoch_id)) + '.pdparams')
