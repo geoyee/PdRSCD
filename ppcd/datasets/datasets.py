@@ -1,4 +1,5 @@
 import os
+import re
 import numpy as np
 import paddle
 from paddle.io import Dataset
@@ -47,7 +48,8 @@ class CDataset(Dataset):
         A_img = paddle.to_tensor(A_img.transpose((2, 0, 1)))
         B_img = paddle.to_tensor(B_img.transpose((2, 0, 1)))
         if self.is_infer:
-            return A_img, B_img
+            name = paddle.to_tensor(int(re.sub('\D', '', A_path)))
+            return A_img, B_img, name
         else:
             lab = paddle.to_tensor(lab[np.newaxis, :, :], dtype='int64')
             return A_img, B_img, lab

@@ -17,12 +17,13 @@ def Infer(model,
     model.eval()
     para_state_dict = paddle.load(params_path)
     model.set_dict(para_state_dict)
-    for idx, (A_img, B_img) in enumerate(infer_loader()):
+    for A_img, B_img, name in infer_loader():
+        name = str(name.numpy()[0])
         pred_list = model(A_img, B_img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
-        for idx2, pred in enumerate(pred_list):
+        for pred in pred_list:
             save_img = (paddle.argmax(pred, axis=1).squeeze().numpy() * 255).astype('uint8')
-            save_path = os.path.join(save_img_path, str(idx) + '_' + str(idx2) + '.jpg')
+            save_path = os.path.join(save_img_path, (name + '.jpg'))
             print(save_path)
             cv2.imwrite(save_path, save_img)
