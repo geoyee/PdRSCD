@@ -19,6 +19,8 @@ def Infer(model,
     model.set_dict(para_state_dict)
     for idx, (A_img, B_img) in enumerate(infer_loader()):
         pred_list = model(A_img, B_img)
+        # img = paddle.concat([A_img, B_img], axis=1)
+        # pred_list = model(img)
         for idx2, pred in enumerate(pred_list):
             save_img = (paddle.argmax(pred, axis=1).squeeze().numpy() * 255).astype('uint8')
             save_path = os.path.join(save_img_path, str(idx) + '_' + str(idx2) + '.jpg')
