@@ -24,7 +24,7 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         raise ValueError('Shape of `pred` and `label should be equal, '
                          'but there are {} and {}.'.format(pred.shape, label.shape))
     # Delete ignore_index
-    mask = (label != ignore_index).astype('int32')
+    mask = label != ignore_index
     pred = pred + 1
     label = label + 1
     pred = pred * mask

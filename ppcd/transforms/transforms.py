@@ -19,12 +19,14 @@ class Compose:
     Args:
         transforms (list/None): 数据增强算子，默认为None
         npd_shape ("HWC"/"CHW"): 如果数据是npy/npz格式，数据形状如何，默认为"HWC"
+        is_255 (bool): 标签是否为0-255图像，默认为True
     """
-    def __init__(self, transforms=None, npd_shape="HWC"):
+    def __init__(self, transforms=None, npd_shape="HWC", is_255=True):
         if npd_shape != "HWC" and npd_shape != "CHW":
             raise ValueError('The npd_shape must be "HWC" or "CHW"!')
         self.transforms = transforms
         self.npd_shape = npd_shape
+        self.is_255 = is_255
     def __call__(self, A_img, B_img, label=None):
         """
         Args:
@@ -32,10 +34,10 @@ class Compose:
             B_img (str): 时段二图像路径 (.tif/.img/.npy/.jpg)
             label (str): 标注图像路径 (.png)，默认为None
         """
-        A_img = func.read_img(A_img, self.npd_shape, False)
-        B_img = func.read_img(B_img, self.npd_shape, False)
+        A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
+        B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
         if label is not None:
-            label = func.read_img(label, self.npd_shape, True)
+            label = func.read_img(label, self.npd_shape, is_lab=True, is_255=self.is_255)
         # 数据增强
         if self.transforms is not None:
             for op in self.transforms:

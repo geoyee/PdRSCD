@@ -67,7 +67,7 @@ def Train(model,
                 val_kappas = []
                 for val_A_img, val_B_img, val_lab in eval_loader():
                     val_pred_list = model(val_A_img, val_B_img)
-                    val_lab = val_lab.astype('int32')
+                    val_lab = val_lab.astype('int64')
                     # val_img = paddle.concat([val_A_img, val_B_img], axis=1)
                     # val_pred_list = model(val_img)
                     val_loss_list = loss_computation(
@@ -76,8 +76,8 @@ def Train(model,
                         losses=losses)
                     val_loss = sum(val_loss_list)
                     val_losses.append(val_loss.numpy())
-                    pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int32')
-                    val_miou, val_acc, val_kappa = ComputAccuracy(pred, val_lab)
+                    val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
+                    val_miou, val_acc, val_kappa = ComputAccuracy(val_pred, val_lab)
                     val_mious.append(val_miou)
                     val_accs.append(val_acc)
                     val_kappas.append(val_kappa)
