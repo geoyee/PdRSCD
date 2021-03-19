@@ -25,9 +25,8 @@ def create_list(dataset_path, mode='train'):
 
 class CDataset(Dataset):
     def __init__(self, data_list_path, transforms=None, separator=' ', npd_shape='HWC', is_255=True, is_infer=False):
-        self.transforms = Compose(transforms=transforms, npd_shape=npd_shape)
+        self.transforms = Compose(transforms=transforms, npd_shape=npd_shape, is_255=is_255)
         self.datas = []
-        self.is_255 = is_255
         self.is_infer = is_infer
         with open(data_list_path, 'r') as f:
             fdatas = f.readlines()
@@ -50,8 +49,6 @@ class CDataset(Dataset):
         if self.is_infer:
             return A_img, B_img
         else:
-            if self.is_255:
-                lab = lab.clip(max=1)
             lab = paddle.to_tensor(lab[np.newaxis, :, :], dtype='int64')
             return A_img, B_img, lab
     def __len__(self):

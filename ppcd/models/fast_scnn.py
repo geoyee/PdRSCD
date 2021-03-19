@@ -23,7 +23,7 @@ class FastSCNN(nn.Layer):
     def __init__(self,
                  num_classes=2,
                  img_channels=3,
-                 enable_auxiliary_loss=True,
+                 enable_auxiliary_loss=False,
                  align_corners=False):
         super().__init__()
         self.learning_to_downsample = LearningToDownsample(img_channels, 32, 48, 64)

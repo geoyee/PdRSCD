@@ -9,7 +9,7 @@ from PIL import Image
 
 
 # 根据图像类型读取图像
-def read_img(img_path, npd_shape, is_lab):
+def read_img(img_path, npd_shape, is_lab, is_255=True):
     img_format = imghdr.what(img_path)
     _, ext = os.path.splitext(img_path)
     if img_format == 'tiff' or ext == '.img':
@@ -24,6 +24,8 @@ def read_img(img_path, npd_shape, is_lab):
     elif img_format == 'jpeg' or img_format == 'png':
         if is_lab:
             jp_data = np.asarray(Image.open(img_path))
+            if is_255:
+                jp_data = jp_data.clip(max=1)
         else:
             jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
         return jp_data.astype('float32')
