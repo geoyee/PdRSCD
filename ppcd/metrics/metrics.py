@@ -22,10 +22,9 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
         label = paddle.squeeze(label, axis=1)
     if not pred.shape == label.shape:
         raise ValueError('Shape of `pred` and `label should be equal, '
-                         'but there are {} and {}.'.format(
-                             pred.shape, label.shape))
+                         'but there are {} and {}.'.format(pred.shape, label.shape))
     # Delete ignore_index
-    mask = label != ignore_index
+    mask = (label != ignore_index).astype('int32')
     pred = pred + 1
     label = label + 1
     pred = pred * mask
@@ -105,7 +104,7 @@ def get_kappa(intersect_area, pred_area, label_area):
     """
     Calculate kappa coefficient
     Args:
-        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes..
+        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes.
         pred_area (Tensor): The prediction area on all classes.
         label_area (Tensor): The ground truth area on all classes.
 
@@ -118,11 +117,13 @@ def get_kappa(intersect_area, pred_area, label_area):
     total_area = np.sum(label_area)
     po = np.sum(intersect_area) / total_area
     pe = np.sum(pred_area * label_area) / (total_area * total_area)
-    kappa = (po - pe) / (1 - pe)
+    kappa = (po - pe) / (1 - pe + 1e-12)
     return kappa
 
 
 def ComputAccuracy(preds, labs, num_classes=2, ignore_index=255):
+    preds = preds.astype('int32')
+    labs = labs.astype('int32')
     intersect_area, pred_area, label_area = calculate_area(preds, labs, num_classes, ignore_index)
     class_iou, miou = get_mean_iou(intersect_area, pred_area, label_area)
     class_acc, acc = get_accuracy(intersect_area, pred_area)
