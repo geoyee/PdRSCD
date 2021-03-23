@@ -22,8 +22,7 @@ def Infer(model,
         pred_list = model(A_img, B_img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
-        for pred in pred_list:
-            save_img = (paddle.argmax(pred, axis=1).squeeze().numpy() * 255).astype('uint8')
-            save_path = os.path.join(save_img_path, (name + '.jpg'))
-            print(save_path)
-            cv2.imwrite(save_path, save_img)
+        save_img = (paddle.argmax(pred_list[0], axis=1).squeeze().numpy() * 255).astype('uint8')
+        save_path = os.path.join(save_img_path, (name + '.jpg'))
+        print(save_path)
+        cv2.imwrite(save_path, save_img)
