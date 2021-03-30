@@ -237,16 +237,22 @@ class RandomBlur:
         prob (float): 图像模糊概率。默认为0.1
         ksize (int): 高斯核大小，默认为3
         band_num (int): 操作的波段数，默认为3
+        both_do (bool): 是否对两个时段进行操作，默认为True
+            当为True时对两个时段的图像进行增强， 当为False时仅对第二时段进行增强
     """
-    def __init__(self, prob=0.1, ksize=3, band_num=3):
+    def __init__(self, prob=0.1, ksize=3, band_num=3, both_do=True):
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
+        if not isinstance(both_do, bool):
+            raise ValueError('both_do should be bool.')
         self.prob = prob
         self.ksize = ksize
         self.band_num = band_num
+        self.both_do = both_do
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
-            A_img[:, :, :self.band_num] = cv2.GaussianBlur(A_img[:, :, :self.band_num], (self.ksize, self.ksize), 0)
+            if self.both_do:
+                A_img[:, :, :self.band_num] = cv2.GaussianBlur(A_img[:, :, :self.band_num], (self.ksize, self.ksize), 0)
             B_img[:, :, :self.band_num] = cv2.GaussianBlur(B_img[:, :, :self.band_num], (self.ksize, self.ksize), 0)
         return (A_img, B_img, label)
 
@@ -258,23 +264,29 @@ class RandomSharpening:
         prob (float): 图像锐化概率。默认为0.1
         laplacian_mode (str): 拉普拉斯算子类型，可选参数为 ['4-1', '8-1', '4-2']，默认为'8-1'
         band_num (int): 操作的波段数，默认为3
+        both_do (bool): 是否对两个时段进行操作，默认为True
+            当为True时对两个时段的图像进行增强， 当为False时仅对第二时段进行增强
     """
     laplacian_dict = {
         '4-1': np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]], np.float32),
         '8-1': np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]], np.float32),
         '4-2': np.array([[1, -2, 1], [-2, 4, -2], [1, -2, 1]], np.float32)
     }
-    def __init__(self, prob=0.1, laplacian_mode='8-1', band_num=3):
+    def __init__(self, prob=0.1, laplacian_mode='8-1', band_num=3, both_do=True):
         assert laplacian_mode in self.laplacian_dict,  \
                'laplacian_mode should be one of {}.'.format(self.laplacian_dict.keys())
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
+        if not isinstance(both_do, bool):
+            raise ValueError('both_do should be bool.')
         self.prob = prob
         self.band_num = band_num
         self.kernel = self.laplacian_dict[laplacian_mode]
+        self.both_do = both_do
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
-            A_img[:, :, :self.band_num] += (0.2 * cv2.filter2D(A_img[:, :, :self.band_num], -1, kernel=self.kernel))
+            if self.both_do:
+                A_img[:, :, :self.band_num] += (0.2 * cv2.filter2D(A_img[:, :, :self.band_num], -1, kernel=self.kernel))
             B_img[:, :, :self.band_num] += (0.2 * cv2.filter2D(B_img[:, :, :self.band_num], -1, kernel=self.kernel))
         return (A_img, B_img, label)
 
@@ -287,8 +299,10 @@ class RandomColor:
         alpha_range (list/tuple): 图像对比度调节范围，默认为 [0.8, 1.2]
         beta_range (list/tuple): 图像亮度调节范围，默认为 [-10, 10]
         band_num (int): 操作的波段数，默认为3
+        both_do (bool): 是否对两个时段进行操作，默认为True
+            当为True时对两个时段的图像进行增强， 当为False时仅对第二时段进行增强
     """
-    def __init__(self, prob=0.5, alpha_range=[0.8, 1.2], beta_range=[-10, 10], band_num=3):
+    def __init__(self, prob=0.5, alpha_range=[0.8, 1.2], beta_range=[-10, 10], band_num=3, both_do=True):
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
         if isinstance(alpha_range, list) or isinstance(alpha_range, tuple):
@@ -301,15 +315,19 @@ class RandomColor:
                 raise ValueError(
                     'when beta_range is list or tuple, it should include 2 elements, but it is {}.'
                     .format(beta_range))
+        if not isinstance(both_do, bool):
+            raise ValueError('both_do should be bool.')
         self.prob = prob
         self.alpha_range = list(alpha_range)
         self.beta_range = list(beta_range)
         self.band_num = band_num
+        self.both_do = both_do
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             alpha = random.uniform(self.alpha_range[0], self.alpha_range[1])
             beta = random.uniform(self.beta_range[0], self.beta_range[1])
-            A_img[:, :, :self.band_num] = alpha * A_img[:, :, :self.band_num] + beta
+            if self.both_do:
+                A_img[:, :, :self.band_num] = alpha * A_img[:, :, :self.band_num] + beta
             B_img[:, :, :self.band_num] = alpha * B_img[:, :, :self.band_num] + beta
         return (A_img, B_img, label)
 
@@ -322,23 +340,29 @@ class RandomStrip:
         strip_rate (float): 条带占比，默认0.05
         direction (str): 条带方向，可选参数 ['Horizontal', 'Vertical'],，默认'Horizontal'
         band_num (int): 操作的波段数，默认为3
+        both_do (bool): 是否对两个时段进行操作，默认为True
+            当为True时对两个时段的图像进行增强， 当为False时仅对第二时段进行增强
     """
     strip_list = ['Horizontal', 'Vertical']
-    def __init__(self, prob=0.5, strip_rate=0.05, direction='Horizontal', band_num=3):
+    def __init__(self, prob=0.5, strip_rate=0.05, direction='Horizontal', band_num=3, both_do=True):
         assert direction in self.strip_list, 'direction should be one of {}.'.format(self.strip_list)
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
         if strip_rate < 0 or strip_rate > 1:
             raise ValueError('strip_rate should be between 0 and 1.')
+        if not isinstance(both_do, bool):
+            raise ValueError('both_do should be bool.')
         self.prob = prob
         self.strip_rate = strip_rate
         self.direction = direction
         self.band_num = band_num
+        self.both_do = both_do
     def __call__(self, A_img, B_img, label=None):
         h, w = A_img.shape[:2]
         if random.random() < self.prob:
             strip_num = self.strip_rate * (h if self.direction == 'Horizontal' else w)
-            A_img = func.random_strip(A_img, strip_num, self.direction, self.band_num)
+            if self.both_do:
+                A_img = func.random_strip(A_img, strip_num, self.direction, self.band_num)
             B_img = func.random_strip(B_img, strip_num, self.direction, self.band_num)
         return (A_img, B_img, label)
 
@@ -350,8 +374,10 @@ class RandomFog:
         prob (float): 加上雾效果的概率。默认为0.5
         fog_range (list/tuple): 雾的大小范围，范围在0-1之间，默认为 [0.03, 0.28]
         band_num (int): 操作的波段数，默认为3
+        both_do (bool): 是否对两个时段进行操作，默认为True
+            当为True时对两个时段的图像进行增强， 当为False时仅对第二时段进行增强
     """
-    def __init__(self, prob=0.5, fog_range=[0.03, 0.28], band_num=3):
+    def __init__(self, prob=0.5, fog_range=[0.03, 0.28], band_num=3, both_do=True):
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
         if isinstance(fog_range, list) or isinstance(fog_range, tuple):
@@ -359,12 +385,16 @@ class RandomFog:
                 raise ValueError(
                     'when fog_range is list or tuple, it should include 2 elements, but it is {}.'
                     .format(fog_range))
+        if not isinstance(both_do, bool):
+            raise ValueError('both_do should be bool.')
         self.prob = prob
         self.fog_range = fog_range
         self.band_num = band_num
+        self.both_do = both_do
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
-            A_img = func.add_fog(A_img, self.fog_range, self.band_num)
+            if self.both_do:
+                A_img = func.add_fog(A_img, self.fog_range, self.band_num)
             B_img = func.add_fog(B_img, self.fog_range, self.band_num)
         return (A_img, B_img, label)
 
@@ -476,3 +506,18 @@ class NDBI:
         A_img = func.band_comput(A_img, self.mir_band, self.nir_band)
         B_img = func.band_comput(B_img, self.mir_band, self.nir_band)
         return (A_img, B_img, label)
+
+
+# ----- change detection -----
+class ExchangeTime:
+    """
+    将两个时段的图像进行交换
+    Args:
+        prob (int): 执行此操作的概率。默认为0.5
+    """
+    def __init__(self, prob=0.5):
+        if prob < 0 or prob > 1:
+            raise ValueError('prob should be between 0 and 1.')
+        self.prob = prob
+    def __call__(self, A_img, B_img, label=None):
+        return (B_img, A_img, label)
