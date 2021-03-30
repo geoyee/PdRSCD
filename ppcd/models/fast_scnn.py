@@ -1,7 +1,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from ppcd.models import layers
+from ppcd.models.layers import AuxLayer, ConvBN, ConvBNReLU, SeparableConvBNReLU, PPModule
 
 
 class FastSCNN(nn.Layer):
@@ -37,7 +37,7 @@ class FastSCNN(nn.Layer):
         self.feature_fusion = FeatureFusionModule(64, 128, 128, align_corners)
         self.classifier = Classifier(128, num_classes)
         if enable_auxiliary_loss:
-            self.auxlayer = layers.AuxLayer(64, 32, num_classes)
+            self.auxlayer = AuxLayer(64, 32, num_classes)
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.align_corners = align_corners
     def forward(self, x1, x2):
@@ -76,15 +76,15 @@ class LearningToDownsample(nn.Layer):
     """
     def __init__(self, img_channels=3, dw_channels1=32, dw_channels2=48, out_channels=64):
         super(LearningToDownsample, self).__init__()
-        self.conv_bn_relu = layers.ConvBNReLU(
+        self.conv_bn_relu = ConvBNReLU(
             in_channels=2*img_channels, out_channels=dw_channels1, kernel_size=3, stride=2)
-        self.dsconv_bn_relu1 = layers.SeparableConvBNReLU(
+        self.dsconv_bn_relu1 = SeparableConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,
             kernel_size=3,
             stride=2,
             padding=1)
-        self.dsconv_bn_relu2 = layers.SeparableConvBNReLU(
+        self.dsconv_bn_relu2 = SeparableConvBNReLU(
             in_channels=dw_channels2,
             out_channels=out_channels,
             kernel_size=3,
@@ -123,7 +123,7 @@ class GlobalFeatureExtractor(nn.Layer):
         self.bottleneck3 = self._make_layer(
             InvertedBottleneck, block_channels[1], block_channels[2],
             num_blocks[2], expansion, 1)
-        self.ppm = layers.PPModule(
+        self.ppm = PPModule(
             block_channels[2],
             out_channels,
             bin_sizes=(1, 2, 3, 6),
@@ -164,13 +164,13 @@ class InvertedBottleneck(nn.Layer):
         expand_channels = in_channels * expansion
         self.block = nn.Sequential(
             # pw
-            layers.ConvBNReLU(
+            ConvBNReLU(
                 in_channels=in_channels,
                 out_channels=expand_channels,
                 kernel_size=1,
                 bias_attr=False),
             # dw
-            layers.ConvBNReLU(
+            ConvBNReLU(
                 in_channels=expand_channels,
                 out_channels=expand_channels,
                 kernel_size=3,
@@ -179,7 +179,7 @@ class InvertedBottleneck(nn.Layer):
                 groups=expand_channels,
                 bias_attr=False),
             # pw-linear
-            layers.ConvBN(
+            ConvBN(
                 in_channels=expand_channels,
                 out_channels=out_channels,
                 kernel_size=1,
@@ -206,15 +206,15 @@ class FeatureFusionModule(nn.Layer):
                  align_corners):
         super().__init__()
         # Only depth-wise conv
-        self.dwconv = layers.ConvBNReLU(
+        self.dwconv = ConvBNReLU(
             in_channels=low_in_channels,
             out_channels=out_channels,
             kernel_size=3,
             padding=1,
             groups=128,
             bias_attr=False)
-        self.conv_low_res = layers.ConvBN(out_channels, out_channels, 1)
-        self.conv_high_res = layers.ConvBN(high_in_channels, out_channels, 1)
+        self.conv_low_res = ConvBN(out_channels, out_channels, 1)
+        self.conv_high_res = ConvBN(high_in_channels, out_channels, 1)
         self.align_corners = align_corners
     def forward(self, high_res_input, low_res_input):
         h, w = high_res_input.shape[2:]
@@ -240,12 +240,12 @@ class Classifier(nn.Layer):
     """
     def __init__(self, input_channels, num_classes):
         super().__init__()
-        self.dsconv1 = layers.SeparableConvBNReLU(
+        self.dsconv1 = SeparableConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,
             padding=1)
-        self.dsconv2 = layers.SeparableConvBNReLU(
+        self.dsconv2 = SeparableConvBNReLU(
             in_channels=input_channels,
             out_channels=input_channels,
             kernel_size=3,

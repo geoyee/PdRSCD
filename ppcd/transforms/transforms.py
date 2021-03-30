@@ -1,8 +1,6 @@
 import os
-import imghdr
 import numpy as np
 import cv2
-import gdal
 import random
 import math
 from PIL import Image
