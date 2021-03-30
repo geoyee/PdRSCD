@@ -1,7 +1,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from ppcd.models import layers
+from ppcd.models.layers import ConvBNReLU
 
 
 class UNet(nn.Layer):
@@ -46,7 +46,7 @@ class Encoder(nn.Layer):
     def __init__(self, img_channels):
         super().__init__()
         self.double_conv = nn.Sequential(
-            layers.ConvBNReLU(2*img_channels, 64, 3), layers.ConvBNReLU(64, 64, 3))
+            ConvBNReLU(2*img_channels, 64, 3), ConvBNReLU(64, 64, 3))
         down_channels = [[64, 128], [128, 256], [256, 512], [512, 512]]
         self.down_sample_list = nn.LayerList([
             self.down_sampling(channel[0], channel[1])
@@ -55,8 +55,8 @@ class Encoder(nn.Layer):
     def down_sampling(self, in_channels, out_channels):
         modules = []
         modules.append(nn.MaxPool2D(kernel_size=2, stride=2))
-        modules.append(layers.ConvBNReLU(in_channels, out_channels, 3))
-        modules.append(layers.ConvBNReLU(out_channels, out_channels, 3))
+        modules.append(ConvBNReLU(in_channels, out_channels, 3))
+        modules.append(ConvBNReLU(out_channels, out_channels, 3))
         return nn.Sequential(*modules)
     def forward(self, x):
         short_cuts = []
@@ -101,8 +101,8 @@ class UpSampling(nn.Layer):
         else:
             in_channels *= 2
         self.double_conv = nn.Sequential(
-            layers.ConvBNReLU(in_channels, out_channels, 3),
-            layers.ConvBNReLU(out_channels, out_channels, 3))
+            ConvBNReLU(in_channels, out_channels, 3),
+            ConvBNReLU(out_channels, out_channels, 3))
     def forward(self, x, short_cut):
         if self.use_deconv:
             x = self.deconv(x)
