@@ -1,7 +1,7 @@
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from ppcd.models.layers import SyncBatchNorm, kaiming_normal_init
+from ppcd.models.layers import SyncBatchNorm, kaiming_normal_init, CAM
 
 
 class ConvolutionBlock(nn.Layer):
@@ -36,31 +36,6 @@ class UpSample(nn.Layer):
     def forward(self, x):
         x = self.up(x)
         return x
-
-
-class MLP(nn.Sequential):
-    # Multilayer Perceptron
-    def __init__(self, in_channels, out_channels):
-        super(MLP, self).__init__(
-            nn.Conv2D(in_channels, out_channels, 1),
-            nn.ReLU(),
-            nn.Conv2D(out_channels, in_channels, 1)
-        )
-
-
-class CAM(nn.Layer):
-    # Channel Attention Module
-    def __init__(self, in_channels, ratio=16):
-        super(CAM, self).__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2D(1)
-        self.max_pool = nn.AdaptiveMaxPool2D(1)
-        self.mlp = MLP(in_channels, in_channels//ratio)
-
-    def forward(self,x):
-        avg_out = self.mlp(self.avg_pool(x))
-        max_out = self.mlp(self.max_pool(x))
-        out = F.sigmoid(avg_out + max_out)
-        return out
 
 
 class Encoder(nn.Layer):

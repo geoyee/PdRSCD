@@ -38,6 +38,7 @@ class BCELoss(nn.Layer):
                 raise TypeError(
                     'The type of `pos_weight` is wrong, it should be float or str, but it is {}'
                     .format(type(self.pos_weight)))
+
     def forward(self, logit, label):
         """
         Forward computation.
@@ -91,3 +92,18 @@ class BCELoss(nn.Layer):
         label.stop_gradient = True
         mask.stop_gradient = True
         return loss
+
+
+class CDLoss(nn.Layer):
+    def __init__(self, base_loss=BCELoss()):
+        super().__init__()
+        self.base_loss = base_loss
+
+    def forward(self, logit, label):
+        bce_loss =  self.base_loss(logit, label)
+        smooth = 1.
+        iflat = paddle.flatten(paddle.argmax(logit, axis=1)).astype('float32')
+        tflat = paddle.flatten(label)
+        intersection = (iflat * tflat).sum()
+        dic_loss = 1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth))
+        return  dic_loss + bce_loss

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import paddle
+import paddle.nn.functional as F
 from paddle.io import DataLoader
 from ppcd.metrics import ComputAccuracy
 from visualdl import LogWriter
@@ -21,8 +22,10 @@ def loss_computation(logits_list, labels, losses):
     loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
+        H, W = logits.shape[-2:]
+        label = F.interpolate(x=labels.astype('float32'), size=(H, W), mode='NEAREST').astype('int64')
         loss_i = losses['types'][i]
-        loss_list.append(losses['coef'][i] * loss_i(logits, labels))
+        loss_list.append(losses['coef'][i] * loss_i(logits, label))
     return loss_list
 
 
