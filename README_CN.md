@@ -20,6 +20,7 @@ PdRSCD是基于PaddlePaddle、参考PaddleSeg制作的的遥感变化检测工�
 
 ## 数据增强
 
+|数据增强|
 |-|
 |Resize|
 |Normalize|
@@ -45,6 +46,6 @@ PdRSCD是基于PaddlePaddle、参考PaddleSeg制作的的遥感变化检测工�
 
 ## 联系
 
-email：geoyee@yeah.net
+Email：Geoyee@yeah.net
 
 
