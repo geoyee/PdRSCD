@@ -16,7 +16,9 @@ PdRSCD是基于PaddlePaddle、参考PaddleSeg制作的的遥感变化检测工�
 |损失函数|
 |-|
 |BCELoss|
-|CDLoss(来自DSIFN)|
+|DiceLoss|
+|MixedLoss|
+|TripletLoss|
 
 ## 数据增强
 
