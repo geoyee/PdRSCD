@@ -103,7 +103,6 @@ class DiceLoss(nn.Layer):
         ignore_index (int64): Specifies a target value that is ignored
             and does not contribute to the input gradient. Default ``255``.
     """
-
     def __init__(self, ignore_index=255):
         super(DiceLoss, self).__init__()
         self.ignore_index = ignore_index
@@ -143,7 +142,6 @@ class MixedLoss(nn.Layer):
     Returns:
         A callable object of MixedLoss.
     """
-
     def __init__(self, losses, coef):
         super(MixedLoss, self).__init__()
         if not isinstance(losses, list):
@@ -156,7 +154,6 @@ class MixedLoss(nn.Layer):
             raise ValueError(
                 'The length of `losses` should equal to `coef`, but they are {} and {}.'
                 .format(len_losses, len_coef))
-
         self.losses = losses
         self.coef = coef
 
@@ -166,21 +163,6 @@ class MixedLoss(nn.Layer):
             output = loss(logits, labels)
             final_output += output * self.coef[i]
         return final_output
-
-
-class CDLoss(nn.Layer):
-    def __init__(self, base_loss=BCELoss()):
-        super().__init__()
-        self.base_loss = base_loss
-
-    def forward(self, logit, label):
-        bce_loss =  self.base_loss(logit, label)
-        smooth = 1.
-        iflat = paddle.flatten(paddle.argmax(logit, axis=1)).astype('float32')
-        tflat = paddle.flatten(label)
-        intersection = (iflat * tflat).sum()
-        dic_loss = 1 - ((2. * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth))
-        return  dic_loss + bce_loss
 
 
 class TripletLoss(nn.Layer):

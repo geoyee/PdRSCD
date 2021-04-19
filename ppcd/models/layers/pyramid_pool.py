@@ -33,6 +33,7 @@ class PPModule(nn.Layer):
             kernel_size=3,
             padding=1)
         self.align_corners = align_corners
+
     def _make_stage(self, in_channels, out_channels, size):
         """
         Create one pooling layer.
@@ -50,6 +51,7 @@ class PPModule(nn.Layer):
         conv = layers.ConvBNReLU(
             in_channels=in_channels, out_channels=out_channels, kernel_size=1)
         return nn.Sequential(prior, conv)
+        
     def forward(self, input):
         cat_layers = []
         for stage in self.stages:

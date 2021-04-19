@@ -40,6 +40,7 @@ class FastSCNN(nn.Layer):
             self.auxlayer = AuxLayer(64, 32, num_classes)
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.align_corners = align_corners
+
     def forward(self, x1, x2):
         logit_list = []
         x = paddle.concat([x1, x2], axis=1)
@@ -90,6 +91,7 @@ class LearningToDownsample(nn.Layer):
             kernel_size=3,
             stride=2,
             padding=1)
+
     def forward(self, x):
         x = self.conv_bn_relu(x)
         x = self.dsconv_bn_relu1(x)
@@ -129,6 +131,7 @@ class GlobalFeatureExtractor(nn.Layer):
             bin_sizes=(1, 2, 3, 6),
             dim_reduction=True,
             align_corners=align_corners)
+
     def _make_layer(self,
                     block,
                     in_channels,
@@ -184,6 +187,7 @@ class InvertedBottleneck(nn.Layer):
                 out_channels=out_channels,
                 kernel_size=1,
                 bias_attr=False))
+
     def forward(self, x):
         out = self.block(x)
         if self.use_shortcut:
@@ -216,6 +220,7 @@ class FeatureFusionModule(nn.Layer):
         self.conv_low_res = ConvBN(out_channels, out_channels, 1)
         self.conv_high_res = ConvBN(high_in_channels, out_channels, 1)
         self.align_corners = align_corners
+
     def forward(self, high_res_input, low_res_input):
         h, w = high_res_input.shape[2:]
         low_res_input = F.interpolate(
@@ -253,6 +258,7 @@ class Classifier(nn.Layer):
         self.conv = nn.Conv2D(
             in_channels=input_channels, out_channels=num_classes, kernel_size=1)
         self.dropout = nn.Dropout(p=0.1)  # dropout_prob
+        
     def forward(self, x):
         x = self.dsconv1(x)
         x = self.dsconv2(x)
