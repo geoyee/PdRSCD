@@ -10,7 +10,8 @@ class Vgg16Base(nn.Layer):
     def __init__(self, in_channels=3):
         super(Vgg16Base, self).__init__()
         features = vgg16(pretrained=True).sublayers()[0].sublayers()
-        features[0] = nn.Conv2D(in_channels, 64, kernel_size=[3, 3], padding=1, data_format='NCHW')
+        if in_channels != 3:
+            features[0] = nn.Conv2D(in_channels, 64, kernel_size=[3, 3], padding=1, data_format='NCHW')
         self.features = nn.LayerList(features)
         self.features.eval()
 
@@ -103,7 +104,7 @@ class DSIFN(nn.Layer):
         x = self.o1_conv2(x)
         x = self.sa1(x) * x
         x = self.bn_sa1(x)
-        branch_1_out = F.sigmoid(self.o1_conv3(x))
+        branch_1_out = self.o1_conv3(x)
         x = self.trans_conv1(x)
         x = paddle.concat([x, t1_f_l22, t2_f_l22], axis=1)
         x = self.ca2(x) * x
@@ -112,7 +113,7 @@ class DSIFN(nn.Layer):
         x = self.o2_conv3(x)
         x = self.sa2(x) * x
         x = self.bn_sa2(x)
-        branch_2_out = F.sigmoid(self.o2_conv4(x))
+        branch_2_out = self.o2_conv4(x)
         x = self.trans_conv2(x)
         x = paddle.concat([x, t1_f_l15, t2_f_l15], axis=1)
         x = self.ca3(x) * x
@@ -121,7 +122,7 @@ class DSIFN(nn.Layer):
         x = self.o3_conv3(x)
         x = self.sa3(x) * x
         x = self.bn_sa3(x)
-        branch_3_out = F.sigmoid(self.o3_conv4(x))
+        branch_3_out = self.o3_conv4(x)
         x = self.trans_conv3(x)
         x = paddle.concat([x, t1_f_l8, t2_f_l8], axis=1)
         x = self.ca4(x) * x
@@ -130,7 +131,7 @@ class DSIFN(nn.Layer):
         x = self.o4_conv3(x)
         x = self.sa4(x) * x
         x = self.bn_sa4(x)
-        branch_4_out = F.sigmoid(self.o4_conv4(x))
+        branch_4_out =self.o4_conv4(x)
         x = self.trans_conv4(x)
         x = paddle.concat([x, t1_f_l3, t2_f_l3], axis=1)
         x = self.ca5(x) * x
@@ -139,5 +140,5 @@ class DSIFN(nn.Layer):
         x = self.o5_conv3(x)
         x = self.sa5(x) * x
         x = self.bn_sa5(x)
-        branch_5_out = F.sigmoid(self.o5_conv4(x))
+        branch_5_out = self.o5_conv4(x)
         return [branch_5_out, branch_4_out, branch_3_out, branch_2_out, branch_1_out]
