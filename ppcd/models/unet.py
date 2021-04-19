@@ -32,6 +32,7 @@ class UNet(nn.Layer):
             kernel_size=3,
             stride=1,
             padding=1)
+
     def forward(self, x1, x2):
         logit_list = []
         x = paddle.concat([x1, x2], axis=1)
@@ -58,6 +59,7 @@ class Encoder(nn.Layer):
         modules.append(ConvBNReLU(in_channels, out_channels, 3))
         modules.append(ConvBNReLU(out_channels, out_channels, 3))
         return nn.Sequential(*modules)
+
     def forward(self, x):
         short_cuts = []
         x = self.double_conv(x)
@@ -75,6 +77,7 @@ class Decoder(nn.Layer):
             UpSampling(channel[0], channel[1], align_corners, use_deconv)
             for channel in up_channels
         ])
+
     def forward(self, x, short_cuts):
         for i in range(len(short_cuts)):
             x = self.up_sample_list[i](x, short_cuts[-(i + 1)])
@@ -103,6 +106,7 @@ class UpSampling(nn.Layer):
         self.double_conv = nn.Sequential(
             ConvBNReLU(in_channels, out_channels, 3),
             ConvBNReLU(out_channels, out_channels, 3))
+            
     def forward(self, x, short_cut):
         if self.use_deconv:
             x = self.deconv(x)

@@ -23,6 +23,7 @@ class ConvBN(nn.Layer):
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         self._batch_norm = SyncBatchNorm(out_channels)
+
     def forward(self, x):
         x = self._conv(x)
         x = self._batch_norm(x)
@@ -40,6 +41,7 @@ class ConvBNReLU(nn.Layer):
         self._conv = nn.Conv2D(
             in_channels, out_channels, kernel_size, padding=padding, **kwargs)
         self._batch_norm = SyncBatchNorm(out_channels)
+
     def forward(self, x):
         x = self._conv(x)
         x = self._batch_norm(x)
@@ -64,6 +66,7 @@ class SeparableConvBNReLU(nn.Layer):
             **kwargs)
         self.piontwise_conv = ConvBNReLU(
             in_channels, out_channels, kernel_size=1, groups=1)
+
     def forward(self, x):
         x = self.depthwise_conv(x)
         x = self.piontwise_conv(x)
@@ -96,6 +99,7 @@ class AuxLayer(nn.Layer):
             in_channels=inter_channels,
             out_channels=out_channels,
             kernel_size=1)
+            
     def forward(self, x):
         x = self.conv_bn_relu(x)
         x = self.dropout(x)
