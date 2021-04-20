@@ -17,15 +17,19 @@ def check_logits_losses(logits_list, losses):
             .format(len_logits, len_losses))
 
 
-def loss_computation(logits_list, labels, losses):
+def loss_computation(logits_list, labels, losses, epoch=None, batch=None):
     check_logits_losses(logits_list, losses)
     loss_list = []
     for i in range(len(logits_list)):
         logits = logits_list[i]
-        H, W = logits.shape[-2:]
-        label = F.interpolate(x=labels.astype('float32'), size=(H, W), mode='NEAREST').astype('int64')
+        coef_i = losses['coef'][i]
         loss_i = losses['types'][i]
-        loss_list.append(losses['coef'][i] * loss_i(logits, label))
+        if epoch != None and (epoch != 0 and batch == 0):
+            decay_i = losses['decay'][i] ** epoch
+            # print(decay_i)
+            loss_list.append(decay_i * coef_i * loss_i(logits, labels))
+        else:
+            loss_list.append(coef_i * loss_i(logits, labels))
     return loss_list
 
 
@@ -60,7 +64,9 @@ def Train(model,
                 loss_list = loss_computation(
                     logits_list=pred_list,
                     labels=lab,
-                    losses=losses)
+                    losses=losses,
+                    epoch=epoch_id,
+                    batch=batch_id)
                 loss = sum(loss_list)
                 loss.backward()
                 optimizer.step()
