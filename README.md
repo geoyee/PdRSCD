@@ -179,4 +179,8 @@ Infer(
 - github：https://github.com/geoyee/PdRSCD.git
 - gitee：https://gitee.com/Geoyee/pd-rscd.git
 
+## 交流与反馈
+
+Email：Geoyee@yeah.net
+
 ~~说明：本项目正在龟速建设中，诸多BUG亟待修改，诸多模型损失都还没得~~
