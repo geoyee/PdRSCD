@@ -73,7 +73,7 @@ ppcd
 
 ```python
 # 克隆项目
-# git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
+# ! git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
 ! git clone https://gitee.com/Geoyee/pd-rscd.git
     
 import sys
