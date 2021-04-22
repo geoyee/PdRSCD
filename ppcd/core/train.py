@@ -40,18 +40,25 @@ def Train(model,
           eval_data=None, 
           optimizer=None,
           losses=None,
+          pre_params_path=None,
           save_model_path=None,
           save_epoch=2,
-          log_batch=10):
+          log_batch=10,
+          threshold=0.5):
     # 数据读取器
     data_lens = len(train_data) // batch_size
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True, drop_last=True)
     if eval_data is not None:
         eval_loader = DataLoader(eval_data, batch_size=batch_size, drop_last=True)
-    # 开始训练
+    # 创建模型保存文件夹
     if save_model_path is not None:
         if os.path.exists(save_model_path) == False:
             os.mkdir(save_model_path)
+    # 加载预训练参数
+    if pre_params_path is not None:
+        para_state_dict = paddle.load(pre_params_path)
+        model.set_dict(para_state_dict)
+    # 开始训练
     with LogWriter(logdir=("./log/" + str(time.mktime(time.localtime())))) as writer:
         iters = 0
         for epoch_id in range(epoch):
@@ -91,7 +98,11 @@ def Train(model,
                             losses=losses)
                         val_loss = sum(val_loss_list)
                         val_losses.append(val_loss.numpy())
-                        val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
+                        num_class = pred_list[0].shape[1]
+                        if num_class != 1:
+                            val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
+                        else:
+                            val_pred = (val_pred_list[0] > threshold).astype('int64')
                         val_miou, val_acc, val_kappa = ComputAccuracy(val_pred, val_lab)
                         val_mious.append(val_miou)
                         val_accs.append(val_acc)
