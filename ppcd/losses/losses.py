@@ -167,7 +167,7 @@ class MixedLoss(nn.Layer):
 
 class TripletLoss(nn.Layer):
     def __init__(self, margin=0.1):
-        super().__init__()
+        super(TripletLoss, self).__init__()
         self.margin = margin
 
     def forward(self, logit, label=None):
@@ -184,4 +184,26 @@ class TripletLoss(nn.Layer):
         a_p = paddle.sum(a_p, axis=1)
         a_n = paddle.sum(a_n, axis=1)
         loss = F.relu(a_p + self.margin - a_n)
+        return loss
+
+
+class BCLoss(nn.Layer):
+    """
+        STANet
+        batch-balanced contrastive loss
+        no-change，1
+        change，-1
+    """
+    def __init__(self, margin=2.0):
+        super(BCLoss, self).__init__()
+        self.margin = margin
+
+    def forward(self, distance, label):
+        label = -1 * (2 * label - 1)
+        # print(label, distance)
+        pos_num = paddle.sum((label == 1).astype('float32')) + 0.0001
+        neg_num = paddle.sum((label == -1).astype('float32')) + 0.0001
+        loss_1 = paddle.sum((1 + label) / 2 * paddle.pow(distance, 2)) / pos_num
+        loss_2 = paddle.sum((1 - label) / 2 * paddle.pow(paddle.clip(self.margin - distance, min=0.0), 2)) / neg_num
+        loss = loss_1 + loss_2
         return loss
