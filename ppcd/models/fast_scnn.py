@@ -14,19 +14,19 @@ class FastSCNN(nn.Layer):
     (https://arxiv.org/pdf/1902.04502.pdf).
     Args:
         num_classes (int, optional): The unique number of target classes. Default: 2.
-        img_channels (int, optional): Number of an image's channel.  Default: 3.
+        in_channels (int, optional): Number of an image's channel.  Default: 3.
         enable_auxiliary_loss (bool, optional): A bool value indicates whether adding auxiliary loss.
             If true, auxiliary loss will be added after LearningToDownsample module. Default: False.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.. Default: False.
     """
     def __init__(self,
+                 in_channels=3,
                  num_classes=2,
-                 img_channels=3,
                  enable_auxiliary_loss=False,
                  align_corners=False):
         super().__init__()
-        self.learning_to_downsample = LearningToDownsample(img_channels, 32, 48, 64)
+        self.learning_to_downsample = LearningToDownsample(in_channels, 32, 48, 64)
         self.global_feature_extractor = GlobalFeatureExtractor(
             in_channels=64,
             block_channels=[64, 96, 128],
@@ -75,10 +75,10 @@ class LearningToDownsample(nn.Layer):
         dw_channels2 (int, optional): The input channels of the second sep conv. Default: 48.
         out_channels (int, optional): The output channels of LearningToDownsample module. Default: 64.
     """
-    def __init__(self, img_channels=3, dw_channels1=32, dw_channels2=48, out_channels=64):
+    def __init__(self, in_channels=3, dw_channels1=32, dw_channels2=48, out_channels=64):
         super(LearningToDownsample, self).__init__()
         self.conv_bn_relu = ConvBNReLU(
-            in_channels=2*img_channels, out_channels=dw_channels1, kernel_size=3, stride=2)
+            in_channels=2*in_channels, out_channels=dw_channels1, kernel_size=3, stride=2)
         self.dsconv_bn_relu1 = SeparableConvBNReLU(
             in_channels=dw_channels1,
             out_channels=dw_channels2,

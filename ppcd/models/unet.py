@@ -12,19 +12,19 @@ class UNet(nn.Layer):
     (https://arxiv.org/abs/1505.04597).
     Args:
         num_classes (int): The unique number of target classes.  Default: 2.
-        img_channels (int, optional): Number of an image's channel.  Default: 3.
+        in_channels (int, optional): Number of an image's channel.  Default: 3.
         align_corners (bool, optional): An argument of F.interpolate. It should be set to False when the output size of feature
             is even, e.g. 1024x512, otherwise it is True, e.g. 769x769.  Default: False.
         use_deconv (bool, optional): A bool value indicates whether using deconvolution in upsampling.
             If False, use resize_bilinear. Default: False.
     """
     def __init__(self,
+                 in_channels=3,
                  num_classes=2,
-                 img_channels=3,
                  align_corners=False,
                  use_deconv=False):
         super().__init__()
-        self.encode = Encoder(img_channels)
+        self.encode = Encoder(in_channels)
         self.decode = Decoder(align_corners, use_deconv=use_deconv)
         self.cls = self.conv = nn.Conv2D(
             in_channels=64,
@@ -44,10 +44,10 @@ class UNet(nn.Layer):
 
 
 class Encoder(nn.Layer):
-    def __init__(self, img_channels):
+    def __init__(self, in_channels):
         super().__init__()
         self.double_conv = nn.Sequential(
-            ConvBNReLU(2*img_channels, 64, 3), ConvBNReLU(64, 64, 3))
+            ConvBNReLU(2*in_channels, 64, 3), ConvBNReLU(64, 64, 3))
         down_channels = [[64, 128], [128, 256], [256, 512], [512, 512]]
         self.down_sample_list = nn.LayerList([
             self.down_sampling(channel[0], channel[1])
