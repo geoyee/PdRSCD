@@ -17,6 +17,7 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 | UNet      | ppcd.models.UNet()     | 1            |
 | SNUNet-CD | ppcd.models.SNUNet()   | 1 / 5        |
 | DSIFN     | ppcd.models.DSIFN()    | 1            |
+| STANet    | ppcd.models.STANet()   | 1            |
 
 ### 2. 损失函数
 
@@ -28,6 +29,7 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 | DiceLoss    | 处理正负样本不均衡     |
 | MixedLoss   | 可混合使用上面两个损失 |
 | TripletLoss | 用于三元组损失计算     |
+| BCLoss      | 用于STANet中的距离度量 |
 
 ### 3. 数据增强
 
@@ -72,9 +74,9 @@ ppcd
 1. 因为目前没有程序包，所以需要首先克隆到项目中，并添加到环境变量。
 
 ```python
-# 克隆项目
-# ! git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
-! git clone https://gitee.com/Geoyee/pd-rscd.git
+# 克隆项目（终端操作）
+# !git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
+!git clone https://gitee.com/Geoyee/pd-rscd.git
     
 import sys
 sys.path.append('pd-rscd')  # 加载环境变量
@@ -85,16 +87,16 @@ sys.path.append('pd-rscd')  # 加载环境变量
 ```
 dataset
    ├── train  # 训练数据
-   |	├── A  # 时段一
-   |	├── B  # 时段二
-   |	└── label  # 变化标签
+   |     ├── A  # 时段一
+   |     ├── B  # 时段二
+   |     └── label  # 变化标签
    ├── val  # 评估数据
-   |	├── A
-   |	├── B
-   |	└── label
+   |     ├── A
+   |     ├── B
+   |     └── label
    └── infer  # 预测数据
-   		├── A
-   		└── B
+         ├── A
+         └── B
 ```
 
 ```python
@@ -129,9 +131,6 @@ from ppcd.losses import BCELoss, DiceLoss, MixedLoss  # 这里说明下混合损
 import paddle
 
 model = UNet()
-# 下面可以用于加载之前的训练过的模型参数
-# para_state_dict = paddle.load('your.pdparams')
-# model.set_dict(para_state_dict)
 # loss的使用方法和PaddleSeg相似，可以对照查看，唯一不同多了一个"decay"
 losses = {}
 losses['types'] = [MixedLoss([BCELoss(), DiceLoss()], [1, 1])]  # 混合使用BCE和Dice两个损失，各自的权重都为1
@@ -155,9 +154,11 @@ Train(
     eval_data=val_data,  # 评估数据
     optimizer=opt,  # 优化器
     losses=losses,  # 损失函数
+    pre_params_path="model_output/your_model.pdparams",  # 预训练的权重
     save_model_path="model_output",  # 保存log和模型参数的地址
     save_epoch=10,  # 多少轮评估保存一次模型
     log_batch=10  # 多少批保存一次log
+    threshold=1  # 如果输出的仅为单通道的结果，则需要阈值进行变化判定，若输出结果大于等于两个通道，则该参数无效
 )
 ```
 
@@ -169,8 +170,9 @@ from ppcd.core import Infer
 Infer(
     model=model,  # 网络
     infer_data=infer_data,  # 预测数据
-    params_path="model_output/your.pdparams",  # 模型参数
+    params_path="model_output/your_model.pdparams",  # 模型参数
     save_img_path="output_infer"  # 保存预测结果的路径
+    threshold=1  # 如果输出的仅为单通道的结果，则需要阈值进行变化判定，若输出结果大于等于两个通道，则该参数无效
 )
 ```
 
@@ -183,4 +185,4 @@ Infer(
 
 Email：Geoyee@yeah.net
 
-~~说明：本项目正在龟速建设中，诸多BUG亟待修改，诸多模型损失都还没得~~
+说明：本项目正在龟速建设中，由于能力和时间有限，诸多BUG亟待修改，很多模型损失都还没有，已经有的模型也不保证原论文的精度，只是尽量集成在一起。如有需要可在此基础上进行增改，如有好的意见建议和反馈欢迎交流。
