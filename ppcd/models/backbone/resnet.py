@@ -1,7 +1,7 @@
 import paddle
 import paddle.nn as nn
 
-from ppcd.models.backbone import get_weights_path_from_url
+from ppcd.models.backbone.utils import get_weights_path_from_url
 
 __all__ = [
     'ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101', 'resnet152'
