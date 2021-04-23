@@ -11,13 +11,13 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 - 返回的结果为一个list，就算只有一个结果也需要用“[]”包起来；
 - BCELoss中使用了sigmoid函数，在网络的最后不需要添加sigmoid。
 
-| 模型      | 使用                   | 返回列表长度 |
-| --------- | ---------------------- | ------------ |
-| Fast-SCNN | ppcd.models.FastSCNN() | 1 / 2        |
-| UNet      | ppcd.models.UNet()     | 1            |
-| SNUNet-CD | ppcd.models.SNUNet()   | 1 / 5        |
-| DSIFN     | ppcd.models.DSIFN()    | 1            |
-| STANet    | ppcd.models.STANet()   | 1            |
+| 模型             | 使用                   | 返回列表长度 |
+| ---------------- | ---------------------- | ------------ |
+| Fast-SCNN        | ppcd.models.FastSCNN() | 1 / 2        |
+| UNet             | ppcd.models.UNet()     | 1            |
+| SNUNet-CD        | ppcd.models.SNUNet()   | 1 / 5        |
+| DSIFN            | ppcd.models.DSIFN()    | 1            |
+| STANet（建设中） | ppcd.models.STANet()   | 1            |
 
 ### 2. 损失函数
 
@@ -75,8 +75,8 @@ ppcd
 
 ```python
 # 克隆项目（终端操作）
-# !git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
-!git clone https://gitee.com/Geoyee/pd-rscd.git
+# ! git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
+! git clone https://gitee.com/Geoyee/pd-rscd.git
     
 import sys
 sys.path.append('pd-rscd')  # 加载环境变量
@@ -162,7 +162,7 @@ Train(
 )
 ```
 
-	6. 训练完后同样使用ppcd.core中的Infer即可完成预测。目前预测的结果的图像名只能获取到输入数据的图像名中的数字，所以为了方便对照，最好数据中的图像的文件名使用数字。
+6. 训练完后同样使用ppcd.core中的Infer即可完成预测。目前预测的结果的图像名只能获取到输入数据的图像名中的数字，所以为了方便对照，最好数据中的图像的文件名使用数字。
 
 ```python
 from ppcd.core import Infer
