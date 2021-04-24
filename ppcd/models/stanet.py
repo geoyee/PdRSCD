@@ -16,11 +16,13 @@ class STANet(nn.Layer):
         in_channels (int, optional): Number of an image's channel.  Default: 3.
         # out_channels : 1.
     """
-    def __init__(self, in_channels=3):
+    def __init__(self, in_channels=3, att_mode='BAM'):
         super(STANet, self).__init__()
         f_c = 64
+        if att_mode != 'BAM' and att_mode != 'PAM':
+            raise ValueError('att_mode must be BAM or PAM')
         self.netF = backbone3(f_c=f_c,freeze_bn=False, in_channels=in_channels)
-        self.netA = CDSA(in_channels=f_c, ds=1)
+        self.netA = CDSA(in_channels=f_c, ds=1, mode=att_mode)
         self.pairwise_distance = nn.PairwiseDistance(keepdim=True)
 
     def forward(self, t1, t2):
@@ -45,13 +47,12 @@ class CDSA(nn.Layer):
     """
         self attention module for change detection
     """
-    def __init__(self, in_channels, ds=1):
+    def __init__(self, in_channels, ds=1, mode='BAM'):
         super(CDSA, self).__init__()
-        self.in_channels = in_channels
-        self.ds = ds
-        # print('ds: ', self.ds)
-        self.mode = mode
-        self.Self_Att = BAM(self.in_channels, ds=self.ds)
+        if mode == 'BAM':
+            self.Self_Att = BAM(in_channels, ds=ds)
+        elif self.mode == 'PAM':
+            self.Self_Att = PAM(in_channels=in_channels, out_channels=in_channels, sizes=[1,2,4,8], ds=ds)
         self.apply(weights_init)
 
     def forward(self, x1, x2):
