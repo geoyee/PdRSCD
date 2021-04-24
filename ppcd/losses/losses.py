@@ -207,3 +207,12 @@ class BCLoss(nn.Layer):
         loss_2 = paddle.sum((1 - label) / 2 * paddle.pow(paddle.clip(self.margin - distance, min=0.0), 2)) / neg_num
         loss = loss_1 + loss_2
         return loss
+
+
+class ConstLoss(nn.Layer):
+    # 不参与损失计算，直接返回固定损失值
+    def __init__(self, value=0):
+        self.value = value
+
+    def forward(self, img, label):
+        return self.value

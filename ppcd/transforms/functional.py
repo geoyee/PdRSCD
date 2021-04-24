@@ -13,8 +13,8 @@ def read_img(img_path, npd_shape, is_lab, is_255=True):
     img_format = imghdr.what(img_path)
     _, ext = os.path.splitext(img_path)
     if img_format == 'tiff' or ext == '.img':
-        img_data = gdal.Open(img_path).ReadAsArray()
-        return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[C, H, W]
+        img_data = gdal.open(img_path).readasarray()
+        return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[c, h, w]
     elif ext == '.npy' or ext == '.npz':
         npy_data = np.load(img_path)
         if npd_shape == "HWC":

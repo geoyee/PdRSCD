@@ -110,7 +110,7 @@ class _PAMBlock(nn.Layer):
         x = input
         if self.ds != 1:
             x = self.pool(input)
-        batch_size, c, h, w = x.shape[0], x.shape[1], x.shape[2], x.shape[3] // 2
+        batch_size, _, h, w = x.shape[0], x.shape[2], x.shape[3] // 2
         local_y = []
         local_x = []
         step_h, step_w = h // self.scale, w // self.scale
@@ -210,3 +210,25 @@ class PAM(nn.Layer):
             context += [priors[i]]
         output = self.conv_bn(paddle.concat(context, 1))
         return output
+
+
+class GatedAttentionLayer(nn.Layer):
+    def __init__(self, in_channels, attention_channels):
+        super(GatedAttentionLayer, self).__init__()
+        self.att = nn.Sequential(
+            nn.Linear(in_channels, attention_channels),  # V
+            nn.Tanh(),  # tanh(V * H_t)
+            nn.Linear(attention_channels, 1)
+        )
+        self.gate = nn.Sequential(
+            nn.Linear(in_channels, attention_channels),  # U
+            nn.Sigmoid()  # sigm(U * H_t)
+        )
+        # W_t * [tanh(V * H_t) * sigm(U * H_t)]
+        self.w_t = nn.Linear(attention_channels, 1)
+
+    def forward(self, x):
+        a1 = self.att(x)
+        a2 = self.gate(x)
+        a3 = a1 * a2
+        return self.w_t(a3)
