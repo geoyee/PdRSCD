@@ -18,7 +18,7 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 | SNUNet-CD          | ppcd.models.SNUNet()   | 1 / 5        |
 | DSIFN              | ppcd.models.DSIFN()    | 1            |
 | STANet             | ppcd.models.STANet()   | 1            |
-| CDMI-Net（建设中） | ppcd.models.CDMINet()  | 4            |
+| CDMI-Net（建设中） | ppcd.models.CDMINet()  | ？           |
 
 ### 2. 损失函数
 
