@@ -2,7 +2,7 @@ import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
 from ppcd.models.backbone import resnet18
-from ppcd.models.layers import BAM, PAM
+from ppcd.models.layers import BAM
 from ppcd.models.layers import normal_init, constant_init, kaiming_normal_init
 
 
@@ -45,16 +45,13 @@ class CDSA(nn.Layer):
     """
         self attention module for change detection
     """
-    def __init__(self, in_channels, ds=1, mode='BAM'):
+    def __init__(self, in_channels, ds=1):
         super(CDSA, self).__init__()
         self.in_channels = in_channels
         self.ds = ds
         # print('ds: ', self.ds)
         self.mode = mode
-        if self.mode == 'BAM':
-            self.Self_Att = BAM(self.in_channels, ds=self.ds)
-        elif self.mode == 'PAM':
-            self.Self_Att = PAM(in_channels=self.in_channels, out_channels=self.in_channels, sizes=[1,2,4,8], ds=self.ds)
+        self.Self_Att = BAM(self.in_channels, ds=self.ds)
         self.apply(weights_init)
 
     def forward(self, x1, x2):
