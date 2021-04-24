@@ -11,13 +11,14 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 - 返回的结果为一个list，就算只有一个结果也需要用“[]”包起来；
 - BCELoss中使用了sigmoid函数，在网络的最后不需要添加sigmoid。
 
-| 模型             | 使用                   | 返回列表长度 |
-| ---------------- | ---------------------- | ------------ |
-| Fast-SCNN        | ppcd.models.FastSCNN() | 1 / 2        |
-| UNet             | ppcd.models.UNet()     | 1            |
-| SNUNet-CD        | ppcd.models.SNUNet()   | 1 / 5        |
-| DSIFN            | ppcd.models.DSIFN()    | 1            |
-| STANet（建设中） | ppcd.models.STANet()   | 1            |
+| 模型               | 使用                   | 返回列表长度 |
+| ------------------ | ---------------------- | ------------ |
+| Fast-SCNN          | ppcd.models.FastSCNN() | 1 / 2        |
+| UNet               | ppcd.models.UNet()     | 1            |
+| SNUNet-CD          | ppcd.models.SNUNet()   | 1 / 5        |
+| DSIFN              | ppcd.models.DSIFN()    | 1            |
+| STANet             | ppcd.models.STANet()   | 1            |
+| CDMI-Net（建设中） | ppcd.models.CDMINet()  | 4            |
 
 ### 2. 损失函数
 
