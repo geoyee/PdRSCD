@@ -212,7 +212,18 @@ class BCLoss(nn.Layer):
 class ConstLoss(nn.Layer):
     # 不参与损失计算，直接返回固定损失值
     def __init__(self, value=0):
+        super(ConstLoss, self).__init__()
         self.value = value
 
     def forward(self, img, label):
-        return self.value
+        return paddle.to_tensor(self.value)
+
+
+class LabelBCELoss(nn.Layer):
+    # 计算标签的bceloss
+    def __init__(self):
+        super(LabelBCELoss, self).__init__()
+        self.bceloss = nn.BCELoss()
+
+    def forward(self, fc, lab):
+        return self.bceloss(fc, lab)

@@ -43,6 +43,6 @@ class CDMINet(nn.Layer):
         A_3 = A.reshape([N, 1, -1])
         H_3 = H.reshape([N, -1, self.feature_channels])
         M = paddle.bmm(A_3, H_3)
-        Y_prob = self.classifier(M)
-        Y_hat = paddle.greater_equal(Y_prob, paddle.to_tensor(0.5)).astype('float32')  # y >= 0.5 ? 1 : 0
-        return [A_2, Y_prob, Y_hat]
+        Y_prob = self.classifier(M).reshape([N, 1])
+        # Y_hat = paddle.greater_equal(Y_prob, paddle.to_tensor(0.5)).astype('float32')  # y >= 0.5 ? 1 : 0
+        return [A_2, Y_prob]

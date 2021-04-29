@@ -18,20 +18,21 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 | SNUNet-CD          | ppcd.models.SNUNet()   | 1 / 5        |
 | DSIFN              | ppcd.models.DSIFN()    | 1            |
 | STANet             | ppcd.models.STANet()   | 1            |
-| CDMI-Net（建设中） | ppcd.models.CDMINet()  | ？           |
+| CDMI-Net（未测试） | ppcd.models.CDMINet()  | 2            |
 
 ### 2. 损失函数
 
 目前的损失函数多参考PaddleSeg，相关代码可以去往ppcd.losses下查看，如需使用自建的损失函数，请参考PaddleSeg自建组件的[说明](https://gitee.com/paddlepaddle/PaddleSeg/blob/release/v2.0/docs/add_new_model.md)。包括自建模型也可参考。
 
-| 损失函数    | 说明                                               |
-| ----------- | -------------------------------------------------- |
-| BCELoss     | 二分类交叉熵                                       |
-| DiceLoss    | 处理正负样本不均衡                                 |
-| MixedLoss   | 可混合使用上面两个损失                             |
-| TripletLoss | 用于三元组损失计算                                 |
-| BCLoss      | 用于STANet中的距离度量                             |
-| ConstLoss   | 返回常数损失，用于网络返回部分不需要计算损失的处理 |
+| 损失函数     | 说明                                                         |
+| ------------ | ------------------------------------------------------------ |
+| BCELoss      | 图像二分类交叉熵                                             |
+| DiceLoss     | 处理正负样本不均衡                                           |
+| MixedLoss    | 可混合使用上面两个损失                                       |
+| TripletLoss  | 用于三元组损失计算                                           |
+| BCLoss       | 用于STANet中的距离度量                                       |
+| ConstLoss    | 返回常数损失，用于网络返回部分不需要计算损失的处理           |
+| LabelBCELoss | 分类标签的二分类交叉熵（用于CDMI-Net等使用场景分类完成变化检测的任务） |
 
 ### 3. 数据增强
 
@@ -59,7 +60,7 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 
 ### 4. 传统操作
 
-传统操作方法为新增，用于一些网络最后仅返回单通道图像或在网络计算中需要，因此需要使用一些基本方法进行预处理或后处理，目前此处暂未分离，统一放于ppcd.traditions下。
+传统操作方法为新增，用于一些网络最后仅返回单通道图像或在网络计算中需要，因此需要使用一些基本方法进行预处理或后处理，目前此处暂未分离，统一放于ppcd.traditions下，后期将分为预处理和后处理操作。
 
 | 方法        | 简介                      |
 | ----------- | ------------------------- |
@@ -79,7 +80,7 @@ ppcd
   ├── losses  # 包含损失函数的代码
   ├── metrics  # 包含指标评价的代码
   ├── models  # 包含网络模型、特殊层、层初始化等代码
-  ├── traditions  # 包含一些传统计算的方法
+  ├── traditions  # 包含一些传统计算方法的代码
   └── transforms  # 包含数据增强的代码
 ```
 
@@ -96,7 +97,7 @@ import sys
 sys.path.append('pd-rscd')  # 加载环境变量
 ```
 
-2. 准备数据集，如果数据集是如下格式，可以通过create_list进行创建。
+2. 准备数据集，如果数据集是如下格式，可以通过create_list进行创建。关于正负样本分类的场景数据集训练变化网络（如CDMI-Net等），数据集如是下边的格式，可以通过split_create_list_class进行创建。
 
 ```
 dataset
@@ -111,18 +112,27 @@ dataset
    └── infer  # 预测数据
          ├── A
          └── B
+         
+dataset
+   ├── P  # 正样本数据
+   |   ├── A  # 时段一
+   |   └── B  # 时段二
+   └── N  # 负样本数据
+       ├── A
+       └── B
 ```
 
 ```python
-from ppcd.datasets import create_list
+from ppcd.datasets import create_list, split_create_list_class
 
 datas_path = "datas"  # 数据路径
 train_list_path = create_list(datas_path, mode='train')  # 训练数据
 val_list_path = create_list(datas_path, mode='val')  # 评估数据
 infer_list_path = create_list(datas_path, mode='infer')  # 预测数据
+# train_list_path, val_list_path, infer_list_path = split_create_list_class('testDataset')
 ```
 
-3. 生成数据列表后，即可生成对应的数据集，并根据需要使用数据增强。这里只需要从ppcd.datasets以及ppcd.transforms导入数据集和增强方法即可。
+3. 生成数据列表后，即可生成对应的数据集，并根据需要使用数据增强。这里只需要从ppcd.datasets以及ppcd.transforms导入数据集和增强方法即可。如果需要使用分类的数据集，只需要将is_class设置为True即可。
 
 ```python
 from ppcd.datasets import CDataset
@@ -135,9 +145,11 @@ val_transforms = [T.Resize(512)]
 train_data = CDataset('Dataset/train_list.txt', transforms=train_transforms)
 val_data = CDataset('Dataset/val_list.txt', transforms=val_transforms)
 infer_data = CDataset('Dataset/infer_list.txt', transforms=val_transforms, is_infer=True)
+# 使用分类数据
+# infer_data = CDataset('Dataset/infer_list.txt', transforms=val_transforms, is_infer=True, is_class=True)
 ```
 
-4. 接下来就可以进行训练的准备了。从ppcd.models导入网络，从ppcd.losses导入损失函数，从paddle的API中导入优化器和学习率调整即可。
+4. 接下来就可以进行训练的准备了。从ppcd.models导入网络，从ppcd.losses导入损失函数，从paddle的API中导入优化器和学习率调整即可。对于标签的损失，使用LabelBCELoss计算损失，对于返回的数据不参与损失计算的，使用ConstLoss将value设置为0即可。
 
 ```python
 from ppcd.models import UNet
