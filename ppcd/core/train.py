@@ -9,6 +9,7 @@ import time
 
 
 def check_logits_losses(logits_list, losses):
+    # 自动权重和衰减
     if not losses.has_key('ceof'):
         losses['ceof'] = [1] * len(logits_list)
     if not losses.has_key('decay'):
@@ -33,7 +34,7 @@ def loss_computation(logits_list, labels, losses, epoch=None, batch=None):
         coef_i = losses['coef'][i]
         loss_i = losses['types'][i]
         if isinstance(labels, list):
-            label_i = labels[i]
+            label_i = labels[i]  # 多标签损失
         else:
             label_i = labels[0]
         if epoch != None and (epoch != 0 and batch == 0):
