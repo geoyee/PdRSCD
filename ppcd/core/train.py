@@ -9,6 +9,8 @@ import time
 
 
 def check_logits_losses(logits_list, losses):
+    if not losses.has_key('ceof'):
+        losses['ceof'] = [1] * len(logits_list)
     if not losses.has_key('decay'):
         losses['decay'] = [1] * len(logits_list)
     if len(losses['type']) == len(losses['ceof']) and \
