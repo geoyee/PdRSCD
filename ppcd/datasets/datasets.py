@@ -7,7 +7,8 @@ from paddle.io import Dataset
 from ppcd.transforms import Compose
 
 
-def create_list(dataset_path, mode='train', shuffle=False):
+def create_list(dataset_path, mode='train', shuffle=False, labels_num=1):
+    # labels_num表示有多少标签，默认为1
     save_path = os.path.join(dataset_path, (mode + '_list.txt'))
     with open(save_path, 'w') as f:
         A_path = os.path.join(os.path.join(dataset_path, mode), 'A')
@@ -20,8 +21,15 @@ def create_list(dataset_path, mode='train', shuffle=False):
             A_img = os.path.join(A_path, A_img_name)
             B_img = os.path.join(A_path.replace('A', 'B'), A_img_name)
             if mode != 'infer':
-                label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
-                f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
+                if labels_num == 1:
+                    label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
+                    f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
+                else:
+                    f.write(A_img + ' ' + B_img)  # 写入list.txt
+                    for i in range(labels_num):
+                        label_img_i = os.path.join(A_path.replace('A', ('label_' + str(i + 1))), A_img_name)
+                        f.write(' ' + label_img_i)
+                    f.write('\n')
             else:
                 f.write(A_img + ' ' + B_img + '\n')
     print(mode + '_data_list generated')
