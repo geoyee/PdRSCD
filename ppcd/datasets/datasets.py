@@ -25,10 +25,13 @@ def create_list(dataset_path, mode='train', shuffle=False, labels_num=1):
                     label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
                     f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
                 else:
-                    f.write(A_img + ' ' + B_img)  # 写入list.txt
+                    f.write(A_img + ' ' + B_img + ' ')  # 写入list.txt
                     for i in range(labels_num):
                         label_img_i = os.path.join(A_path.replace('A', ('label_' + str(i + 1))), A_img_name)
-                        f.write(' ' + label_img_i)
+                        if i == 0:
+                            f.write(label_img_i)
+                        else:
+                            f.write('?' + label_img_i)
                     f.write('\n')
             else:
                 f.write(A_img + ' ' + B_img + '\n')
@@ -68,11 +71,13 @@ def split_create_list_class(dataset_path, split_rate=[8, 1, 1], shuffle=True):
 
 
 class CDataset(Dataset):
-    def __init__(self, data_list_path, transforms=None, separator=' ', npd_shape='HWC', is_255=True, is_infer=False, is_class=False):
+    def __init__(self, data_list_path, transforms=None, separator=' ', is_infer=False, \
+                 labels_num=1, npd_shape='HWC', is_255=True, is_class=False):
         self.transforms = Compose(transforms=transforms, npd_shape=npd_shape, is_255=is_255)
         self.datas = []
         self.is_infer = is_infer
         self.is_class = is_class
+        self.labels_num = labels_num if is_class == False else 1
         with open(data_list_path, 'r') as f:
             fdatas = f.readlines()
         for fdata in fdatas:
@@ -80,7 +85,10 @@ class CDataset(Dataset):
             if is_infer:
                 self.datas.append([fdata[0], fdata[1].strip()])
             else:
-                self.datas.append([fdata[0], fdata[1], fdata[2].strip()])
+                if labels_num == 1:
+                    self.datas.append([fdata[0], fdata[1], [fdata[2].strip()]])
+                else:
+                    self.datas.append([fdata[0], fdata[1], fdata[2].strip().split('?')])
         self.lens = len(self.datas)
 
     def __getitem__(self, index):
@@ -95,8 +103,8 @@ class CDataset(Dataset):
                 A_path, B_path = self.datas[index]
                 A_img, B_img = self.transforms(A_path, B_path, None)
             else:
-                A_path, B_path, lab_path = self.datas[index]
-                A_img, B_img, lab = self.transforms(A_path, B_path, lab_path)
+                A_path, B_path, labs_path = self.datas[index]
+                A_img, B_img, labs = self.transforms(A_path, B_path, labs_path)
         A_img = paddle.to_tensor(A_img.transpose((2, 0, 1)))
         B_img = paddle.to_tensor(B_img.transpose((2, 0, 1)))
         if self.is_class:
@@ -104,14 +112,15 @@ class CDataset(Dataset):
                 name = paddle.to_tensor(int(re.sub('\D', '', A_path)))
                 return A_img, B_img, name
             else:
-                return A_img, B_img, paddle.to_tensor(int(lab), dtype='float32')
+                return A_img, B_img, paddle.to_tensor(int(lab[0]), dtype='float32')
         else:
             if self.is_infer:
                 name = paddle.to_tensor(int(re.sub('\D', '', A_path)))
                 return A_img, B_img, name
             else:
-                lab = paddle.to_tensor(lab[np.newaxis, :, :], dtype='int64')
-                return A_img, B_img, lab
+                for i in len(labs):
+                    labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
+                return A_img, B_img, labs
 
     def __len__(self):
         return self.lens

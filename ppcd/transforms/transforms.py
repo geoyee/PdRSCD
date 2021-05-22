@@ -25,25 +25,29 @@ class Compose:
         self.transforms = transforms
         self.npd_shape = npd_shape
         self.is_255 = is_255
+
     def __call__(self, A_img, B_img, label=None):
         """
         Args:
             A_img (str): 时段一图像路径 (.tif/.img/.npy/.jpg)
             B_img (str): 时段二图像路径 (.tif/.img/.npy/.jpg)
-            label (str): 标注图像路径 (.png)，默认为None
+            label (list): 标注图像路径 (.png)，默认为None
         """
         A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
         B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
         if label is not None:
-            label = func.read_img(label, self.npd_shape, is_lab=True, is_255=self.is_255)
+            labels = []
+            for lab_pth in label:
+                labels.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
         # 数据增强
         if self.transforms is not None:
             for op in self.transforms:
-                A_img, B_img, label = op(A_img, B_img, label)
+                A_img, B_img, labels = op(A_img, B_img, labels)
         if label is None:
             return (A_img, B_img)
         else:
-            return (A_img, B_img, label.astype('int64'))
+            labels = [lab.astype('int64') for lab in labels]
+            return (A_img, B_img, labels)
 
 
 # ----- transforms -----
@@ -74,6 +78,7 @@ class Resize:
         assert interp in self.interp_dict, 'interp should be one of {}.'.format(self.interp_dict.keys())
         self.target_size = target_size
         self.interp = interp
+
     def __call__(self, A_img, B_img, label=None):
         if not isinstance(A_img, np.ndarray) or not isinstance(B_img, np.ndarray):
             raise TypeError("ResizeImage: image type is not np.ndarray.")
@@ -86,7 +91,7 @@ class Resize:
         A_img = cv2.resize(A_img, size, interpolation=self.interp_dict[self.interp])
         B_img = cv2.resize(B_img, size, interpolation=self.interp_dict[self.interp])
         if label is not None:
-            label = cv2.resize(label, size, interpolation=self.interp_dict['NEAREST'])
+            label = [cv2.resize(lab, size, interpolation=self.interp_dict['NEAREST']) for lab in label]
         return (A_img, B_img, label)
             
 
@@ -116,6 +121,7 @@ class Normalize:
         self.band_num = band_num
         self.min_val = [0] * band_num
         self.max_val = [2**bit_num - 1] * band_num
+
     def __call__(self, A_img, B_img, label=None):
         mean = np.array(self.mean)[np.newaxis, np.newaxis, :]
         std = np.array(self.std)[np.newaxis, np.newaxis, :]
@@ -138,12 +144,13 @@ class RandomFlip:
         assert direction in self.flips_list, 'direction should be one of {}.'.format(self.flips_list)
         self.prob = prob
         self.direction = direction
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             A_img = func.mode_flip(A_img, self.direction)
             B_img = func.mode_flip(B_img, self.direction)
             if label is not None:
-                label = func.mode_flip(label, self.direction)
+                label = [func.mode_flip(lab, self.direction) for lab in label]
         return (A_img, B_img, label)
 
 
@@ -159,13 +166,14 @@ class RandomRotate:
             raise ValueError('prob should be between 0 and 1.')
         self.prob = prob
         self.ig_pix = ig_pix
+
     def __call__(self, A_img, B_img, label=None):
         ang = random.randint(1, 89)
         if random.random() < self.prob:
             A_img = func.rotate_img(A_img, ang)
             B_img = func.rotate_img(B_img, ang)
             if label is not None:
-                label = func.rotate_img(label, ang, ig_pix=self.ig_pix)
+                label = [func.rotate_img(lab, ang, ig_pix=self.ig_pix) for lab in label]
         return (A_img, B_img, label)
 
 
@@ -186,6 +194,7 @@ class RandomEnlarge:
                     .format(min_clip_rate))
         self.prob = prob
         self.min_clip_rate = list(min_clip_rate)
+
     def __call__(self, A_img, B_img, label=None):
         h, w = A_img.shape[:2]
         h_clip = math.floor(self.min_clip_rate[0] * h)
@@ -196,7 +205,7 @@ class RandomEnlarge:
             A_img = func.enlarge_img(A_img, x, y, h_clip, w_clip)
             B_img = func.enlarge_img(B_img, x, y, h_clip, w_clip)
             if label is not None:
-                label = func.enlarge_img(label, x, y, h_clip, w_clip)
+                label = [func.enlarge_img(lab, x, y, h_clip, w_clip) for lab in label]
         return (A_img, B_img, label)
 
 
@@ -219,6 +228,7 @@ class RandomNarrow:
         self.prob = prob
         self.min_size_rate = list(min_size_rate)
         self.ig_pix = ig_pix
+
     def __call__(self, A_img, B_img, label=None):
         x_rate = random.uniform(self.min_size_rate[0], 1)
         y_rate = random.uniform(self.min_size_rate[1], 1)
@@ -226,7 +236,7 @@ class RandomNarrow:
             A_img = func.narrow_img(A_img, x_rate, y_rate)
             B_img = func.narrow_img(B_img, x_rate, y_rate)
             if label is not None:
-                label = func.narrow_img(label, x_rate, y_rate, ig_pix=self.ig_pix)
+                label = [func.narrow_img(lab, x_rate, y_rate, ig_pix=self.ig_pix) for lab in label]
         return (A_img, B_img, label)
 
 
@@ -249,6 +259,7 @@ class RandomBlur:
         self.ksize = ksize
         self.band_num = band_num
         self.both_do = both_do
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             if self.both_do:
@@ -283,6 +294,7 @@ class RandomSharpening:
         self.band_num = band_num
         self.kernel = self.laplacian_dict[laplacian_mode]
         self.both_do = both_do
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             if self.both_do:
@@ -322,6 +334,7 @@ class RandomColor:
         self.beta_range = list(beta_range)
         self.band_num = band_num
         self.both_do = both_do
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             alpha = random.uniform(self.alpha_range[0], self.alpha_range[1])
@@ -357,6 +370,7 @@ class RandomStrip:
         self.direction = direction
         self.band_num = band_num
         self.both_do = both_do
+
     def __call__(self, A_img, B_img, label=None):
         h, w = A_img.shape[:2]
         if random.random() < self.prob:
@@ -391,6 +405,7 @@ class RandomFog:
         self.fog_range = fog_range
         self.band_num = band_num
         self.both_do = both_do
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             if self.both_do:
@@ -415,6 +430,7 @@ class RandomSplicing:
         self.prob = prob
         self.direction = direction
         self.band_num = band_num
+        
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             A_img = func.random_splicing(A_img, self.direction, self.band_num)
@@ -440,6 +456,7 @@ class RandomRemoveBand:
         self.prob = prob
         self.kill_bands = [] if kill_bands == None else list(kill_bands)
         self.keep_bands = [] if keep_bands == None else list(keep_bands)
+
     def __call__(self, A_img, B_img, label=None):
         if random.random() < self.prob:
             rand_list = []
@@ -470,6 +487,7 @@ class NDVI:
     def __init__(self, r_band=2, nir_band=3):
         self.r_band = r_band
         self.nir_band = nir_band
+
     def __call__(self, A_img, B_img, label=None):
         A_img = func.band_comput(A_img, self.nir_band, self.r_band)
         B_img = func.band_comput(B_img, self.nir_band, self.r_band)
@@ -486,6 +504,7 @@ class NDWI:
     def __init__(self, g_band=1, nir_band=3):
         self.g_band = g_band
         self.nir_band = nir_band
+
     def __call__(self, A_img, B_img, label=None):
         A_img = func.band_comput(A_img, self.g_band, self.nir_band)
         B_img = func.band_comput(B_img, self.g_band, self.nir_band)
@@ -502,6 +521,7 @@ class NDBI:
     def __init__(self, nir_band=3, mir_band=4):
         self.nir_band = nir_band
         self.mir_band = mir_band
+
     def __call__(self, A_img, B_img, label=None):
         A_img = func.band_comput(A_img, self.mir_band, self.nir_band)
         B_img = func.band_comput(B_img, self.mir_band, self.nir_band)
@@ -519,5 +539,6 @@ class ExchangeTime:
         if prob < 0 or prob > 1:
             raise ValueError('prob should be between 0 and 1.')
         self.prob = prob
+
     def __call__(self, A_img, B_img, label=None):
         return (B_img, A_img, label)
