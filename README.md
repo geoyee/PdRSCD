@@ -4,8 +4,8 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 
 ## 现有资产
 
-1. [模型及损失函数](ppcd\models\README.md)
-2. [数据增强方法](ppcd\transforms\README.md)
+1. [模型及损失函数](PdRSCD/ppcd/models/README.md)
+2. [数据增强方法](ppcd/transforms/README.md)
 3. [传统处理方法](ppcd\traditions\README.md)
 
 ## 代码结构
