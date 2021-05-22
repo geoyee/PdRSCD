@@ -219,11 +219,11 @@ class ConstLoss(nn.Layer):
         return paddle.to_tensor(self.value)
 
 
-class LabelBCELoss(nn.Layer):
-    # 计算标签的bceloss
+class LabelL1Loss(nn.Layer):
+    # 计算标签的l1loss
     def __init__(self):
-        super(LabelBCELoss, self).__init__()
-        self.bceloss = nn.BCELoss()
+        super(LabelL1Loss, self).__init__()
+        self.l1loss = nn.L1Loss()
 
     def forward(self, fc, lab):
-        return self.bceloss(fc, lab)
+        return self.l1loss(fc, lab)

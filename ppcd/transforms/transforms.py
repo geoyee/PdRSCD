@@ -26,24 +26,27 @@ class Compose:
         self.npd_shape = npd_shape
         self.is_255 = is_255
 
-    def __call__(self, A_img, B_img, label=None):
+    def __call__(self, A_img, B_img, lab=None):
         """
         Args:
             A_img (str): 时段一图像路径 (.tif/.img/.npy/.jpg)
             B_img (str): 时段二图像路径 (.tif/.img/.npy/.jpg)
-            label (list): 标注图像路径 (.png)，默认为None
+            lab (list): 标注图像路径 (.png)，默认为None
         """
         A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
         B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
-        if label is not None:
-            labels = []
-            for lab_pth in label:
-                labels.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
+        if lab is not None:
+            labs = []
+            for lab_pth in lab:
+                labs.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
+        else:
+            labs = None
         # 数据增强
+        labels = []
         if self.transforms is not None:
             for op in self.transforms:
-                A_img, B_img, labels = op(A_img, B_img, labels)
-        if label is None:
+                A_img, B_img, labels = op(A_img, B_img, labs)
+        if lab is None:
             return (A_img, B_img)
         else:
             labels = [lab.astype('int64') for lab in labels]

@@ -239,6 +239,6 @@ class CDNet(nn.Layer):
         return [out, out1, out2]
 
 
-def CDNet34(in_channels, **kwargs):
+def CDNet34(in_channels=3, **kwargs):
     model = CDNet(in_channels, SEBasicBlock, [3, 4, 6, 3], **kwargs)
     return model

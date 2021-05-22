@@ -7,7 +7,7 @@ from paddle.io import Dataset
 from ppcd.transforms import Compose
 
 
-def create_list(dataset_path, mode='train', shuffle=False, labels_num=1):
+def create_list(dataset_path, mode='train', shuffle=False, label_end='.png', labels_num=1):
     # labels_num表示有多少标签，默认为1
     save_path = os.path.join(dataset_path, (mode + '_list.txt'))
     with open(save_path, 'w') as f:
@@ -17,17 +17,20 @@ def create_list(dataset_path, mode='train', shuffle=False, labels_num=1):
             random.shuffle(A_imgs_name)
         else:
             A_imgs_name.sort()
+        image_end = os.path.splitext(A_imgs_name[0])[-1]
         for A_img_name in A_imgs_name:
             A_img = os.path.join(A_path, A_img_name)
             B_img = os.path.join(A_path.replace('A', 'B'), A_img_name)
             if mode != 'infer':
                 if labels_num == 1:
-                    label_img = os.path.join(A_path.replace('A', 'label'), A_img_name)
+                    label_img = os.path.join(A_path.replace('A', 'label'), A_img_name.replace(image_end, label_end))
                     f.write(A_img + ' ' + B_img + ' ' + label_img + '\n')  # 写入list.txt
                 else:
                     f.write(A_img + ' ' + B_img + ' ')  # 写入list.txt
                     for i in range(labels_num):
-                        label_img_i = os.path.join(A_path.replace('A', ('label_' + str(i + 1))), A_img_name)
+                        label_img_i = os.path.join(
+                            A_path.replace('A', ('label_' + str(i + 1))), A_img_name.replace(image_end, label_end)
+                        )
                         if i == 0:
                             f.write(label_img_i)
                         else:
@@ -43,7 +46,7 @@ def create_list(dataset_path, mode='train', shuffle=False, labels_num=1):
 def split_create_list_class(dataset_path, split_rate=[8, 1, 1], shuffle=True):
     train_save_path = os.path.join(dataset_path, 'train_list.txt')
     eval_save_path = os.path.join(dataset_path, 'val_list.txt')
-    test_save_path = os.path.join(dataset_path, 'test_list.txt')
+    test_save_path = os.path.join(dataset_path, 'infer_list.txt')
     with open(train_save_path, 'w') as tf:
         with open(eval_save_path, 'w') as ef:
             with open(test_save_path, 'w') as sf:
@@ -112,13 +115,14 @@ class CDataset(Dataset):
                 name = paddle.to_tensor(int(re.sub('\D', '', A_path)))
                 return A_img, B_img, name
             else:
-                return A_img, B_img, paddle.to_tensor(int(lab[0]), dtype='float32')
+                return A_img, B_img, \
+                       paddle.to_tensor(np.array([int(lab[0])])[np.newaxis, :], dtype='float32')
         else:
             if self.is_infer:
                 name = paddle.to_tensor(int(re.sub('\D', '', A_path)))
                 return A_img, B_img, name
             else:
-                for i in len(labs):
+                for i in range(len(labs)):
                     labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
                 return A_img, B_img, labs
 
