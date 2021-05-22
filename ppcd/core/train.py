@@ -9,12 +9,18 @@ import time
 
 
 def check_logits_losses(logits_list, losses):
-    len_logits = len(logits_list)
-    len_losses = len(losses['types'])
-    if len_logits != len_losses:
-        raise RuntimeError(
-            'The length of logits_list should equal to the types of loss config: {} != {}.'
-            .format(len_logits, len_losses))
+    if not losses.has_key('decay'):
+        losses['decay'] = [1] * len(logits_list)
+    if len(losses['type']) == len(losses['ceof']) and \
+       len(losses['type']) == len(losses['decay']):
+        len_logits = len(logits_list)
+        len_losses = len(losses['types'])
+        if len_logits != len_losses:
+            raise RuntimeError(
+                'The length of logits_list should equal to the types of loss config: {} != {}.'
+                .format(len_logits, len_losses))
+    else:
+        raise RuntimeError('The logits_list type/coef/decay should equal.')
 
 
 def loss_computation(logits_list, labels, losses, epoch=None, batch=None):
@@ -24,12 +30,16 @@ def loss_computation(logits_list, labels, losses, epoch=None, batch=None):
         logits = logits_list[i]
         coef_i = losses['coef'][i]
         loss_i = losses['types'][i]
+        if isinstance(labels, list):
+            label_i = labels[i]
+        else:
+            label_i = labels
         if epoch != None and (epoch != 0 and batch == 0):
             decay_i = losses['decay'][i] ** epoch
             # print(decay_i)
-            loss_list.append(decay_i * coef_i * loss_i(logits, labels))
+            loss_list.append(decay_i * coef_i * loss_i(logits, label_i))
         else:
-            loss_list.append(coef_i * loss_i(logits, labels))
+            loss_list.append(coef_i * loss_i(logits, label_i))
     return loss_list
 
 
