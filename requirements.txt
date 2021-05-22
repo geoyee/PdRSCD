@@ -1,3 +1,4 @@
+paddlepaddle >= 2.0.0
 pre-commit
 yapf == 0.26.0
 flake8
