@@ -4,70 +4,9 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 
 ## 现有资产
 
-### 1. 模型库
-
-相关模型可以去往ppcd.models下查看，包括参数等等。如果需要使用自建的模型，可在ppcd.models下新建.py文件，完成模型搭建，并在对应的init文件夹下导入自己的模型。有关模型的建立需要注意两点：
-
-- 返回的结果为一个list，就算只有一个结果也需要用“[]”包起来；
-- BCELoss中使用了sigmoid函数，在网络的最后不需要添加sigmoid。
-
-| 模型               | 使用                   | 返回列表长度 |
-| ------------------ | ---------------------- | ------------ |
-| Fast-SCNN          | ppcd.models.FastSCNN() | 1 / 2        |
-| UNet               | ppcd.models.UNet()     | 1            |
-| SNUNet-CD          | ppcd.models.SNUNet()   | 1 / 5        |
-| DSIFN              | ppcd.models.DSIFN()    | 1            |
-| STANet             | ppcd.models.STANet()   | 1            |
-| CDMI-Net（未测试） | ppcd.models.CDMINet()  | 2            |
-
-### 2. 损失函数
-
-目前的损失函数多参考PaddleSeg，相关代码可以去往ppcd.losses下查看，如需使用自建的损失函数，请参考PaddleSeg自建组件的[说明](https://gitee.com/paddlepaddle/PaddleSeg/blob/release/v2.0/docs/add_new_model.md)。包括自建模型也可参考。
-
-| 损失函数     | 说明                                                         |
-| ------------ | ------------------------------------------------------------ |
-| BCELoss      | 图像二分类交叉熵                                             |
-| DiceLoss     | 处理正负样本不均衡                                           |
-| MixedLoss    | 可混合使用上面两个损失                                       |
-| TripletLoss  | 用于三元组损失计算                                           |
-| BCLoss       | 用于STANet中的距离度量                                       |
-| ConstLoss    | 返回常数损失，用于网络返回部分不需要计算损失的处理           |
-| LabelBCELoss | 分类标签的二分类交叉熵（用于CDMI-Net等使用场景分类完成变化检测的任务） |
-
-### 3. 数据增强
-
-数据增强适配了遥感图像多通道的特点，并结合了一些专门的增强方法，相关代码可以去往ppcd.transforms.transforms下查看和修改。其中使用参数均在代码中有所说明。
-
-| 数据增强         | 说明                                     |
-| ---------------- | ---------------------------------------- |
-| Resize           | 对图像进行大小改变                       |
-| Normalize        | 对图像进行标准化                         |
-| RandomFlip       | 随机对图像进行翻转                       |
-| RandomRotate     | 随机对图像进行旋转                       |
-| RandomEnlarge    | 随机对图像进行放大然后裁剪回原大小       |
-| RandomNarrow     | 随即对图像进行缩小然后填充回原大小       |
-| RandomBlur       | 随机对图像添加高斯模糊                   |
-| RandomSharpening | 随机对图像进行锐化                       |
-| RandomColor      | 随机改变图像的对比度和亮度               |
-| RandomStrip      | 随机对图像添加条纹噪声                   |
-| RandomFog        | 随机对图像加雾效果                       |
-| RandomSplicing   | 随机对图像进行拼接不匀色改变             |
-| RandomRemoveBand | 随机移除图像部分波段                     |
-| NDVI             | 计算图像的归一化植被指数并叠加在新的通道 |
-| NDWI             | 计算图像的归一化水体指数并叠加在新的通道 |
-| NDBI             | 计算图像的归一化建筑指数并叠加在新的通道 |
-| ExchangeTime     | 将两个时段的图像进行交换                 |
-
-### 4. 传统操作
-
-传统操作方法为新增，用于一些网络最后仅返回单通道图像或在网络计算中需要，因此需要使用一些基本方法进行预处理或后处理，目前此处暂未分离，统一放于ppcd.traditions下，后期将分为预处理和后处理操作。
-
-| 方法        | 简介                      |
-| ----------- | ------------------------- |
-| CVA         | 计算两期图像的变化矢量    |
-| BaseCompute | 对两期图像进行做差/除运算 |
-
-
+1. [模型及损失函数](ppcd\models\README.md)
+2. [数据增强方法](ppcd\transforms\README.md)
+3. [传统处理方法](ppcd\traditions\README.md)
 
 ## 代码结构
 
