@@ -4,9 +4,10 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 
 ## 现有资产
 
-1. [模型及损失函数](ppcd/models/README.md)
-2. [数据增强方法](ppcd/transforms/README.md)
-3. [传统处理方法](ppcd/traditions/README.md)
+1. [模型库](ppcd/models/README.md)
+2. [损失函数](ppcd/losses/README.md)
+3. [数据增强方法](ppcd/transforms/README.md)
+4. [传统处理方法](ppcd/traditions/README.md)
 
 ## 代码结构
 
@@ -36,7 +37,7 @@ import sys
 sys.path.append('pd-rscd')  # 加载环境变量
 ```
 
-2. 准备数据集，如果数据集是如下格式，可以通过create_list进行创建。关于正负样本分类的场景数据集训练变化网络（如CDMI-Net等），数据集如是下边的格式，可以通过split_create_list_class进行创建。
+2. 准备数据集，如果数据集是如下格式，可以通过create_list进行创建；当有多个标签（如DTCDSCD等），只需要将组织数据是将多个标签组织成label_1、label_2……这样的格式即可。关于正负样本分类的场景数据集训练变化网络（如CDMI-Net等），数据集如是下边的格式，可以通过split_create_list_class进行创建。
 
 ```
 dataset
@@ -68,7 +69,8 @@ datas_path = "datas"  # 数据路径
 train_list_path = create_list(datas_path, mode='train')  # 训练数据
 val_list_path = create_list(datas_path, mode='val')  # 评估数据
 infer_list_path = create_list(datas_path, mode='infer')  # 预测数据
-# train_list_path, val_list_path, infer_list_path = split_create_list_class('testDataset')
+# train_list_path = create_list(datas_path, mode='train', labels_num=?)  # 多标签数据，?代表标签数
+# train_list_path, val_list_path, infer_list_path = split_create_list_class('testDataset')  # 分类数据
 ```
 
 3. 生成数据列表后，即可生成对应的数据集，并根据需要使用数据增强。这里只需要从ppcd.datasets以及ppcd.transforms导入数据集和增强方法即可。如果需要使用分类的数据集，只需要将is_class设置为True即可。
