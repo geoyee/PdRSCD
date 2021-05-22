@@ -35,7 +35,7 @@ def loss_computation(logits_list, labels, losses, epoch=None, batch=None):
         if isinstance(labels, list):
             label_i = labels[i]
         else:
-            label_i = labels
+            label_i = labels[0]
         if epoch != None and (epoch != 0 and batch == 0):
             decay_i = losses['decay'][i] ** epoch
             # print(decay_i)
