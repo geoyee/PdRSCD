@@ -1,6 +1,5 @@
 import imghdr
 import random
-import gdal
 import math
 import os
 import cv2
@@ -12,25 +11,33 @@ from PIL import Image
 def read_img(img_path, npd_shape, is_lab, is_255=True):
     img_format = imghdr.what(img_path)
     _, ext = os.path.splitext(img_path)
-    if img_format == 'tiff' or ext == '.img':
-        img_data = gdal.open(img_path).readasarray()
-        return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[c, h, w]
-    elif ext == '.npy' or ext == '.npz':
-        npy_data = np.load(img_path)
-        if npd_shape == "HWC":
-            return npy_data.astype('float32')
+    ipt_gdal = False
+    try:
+        import gdal
+        ipt_gdal = True
+    finally:
+        if img_format == 'tiff' or ext == '.img':
+            if ipt_gdal == True:
+                img_data = gdal.open(img_path).readasarray()
+                return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[c, h, w]
+            else:
+                raise Exception('Unable to open TIF/IMG image without GDAL!')
+        elif ext == '.npy' or ext == '.npz':
+            npy_data = np.load(img_path)
+            if npd_shape == "HWC":
+                return npy_data.astype('float32')
+            else:
+                return npy_data.transpose((1, 2, 0)).astype('float32')
+        elif img_format == 'jpeg' or img_format == 'png':
+            if is_lab:
+                jp_data = np.asarray(Image.open(img_path))
+                if is_255:
+                    jp_data = jp_data.clip(max=1)
+            else:
+                jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+            return jp_data.astype('float32')
         else:
-            return npy_data.transpose((1, 2, 0)).astype('float32')
-    elif img_format == 'jpeg' or img_format == 'png':
-        if is_lab:
-            jp_data = np.asarray(Image.open(img_path))
-            if is_255:
-                jp_data = jp_data.clip(max=1)
-        else:
-            jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
-        return jp_data.astype('float32')
-    else:
-        raise Exception('Not support {} image format!'.format(ext))
+            raise Exception('Not support {} image format!'.format(ext))
 
 
 # 标准化

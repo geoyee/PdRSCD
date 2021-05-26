@@ -145,6 +145,7 @@ Infer(
 
 ## TODO
 
+- [x] AI Studio无gdal报错，当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取
 - [ ] 添加带地理坐标的划窗预测与拼接
 - [ ] 添加ETA，便于估算训练时间
 - [ ] 添加F1、OA等评估指标
