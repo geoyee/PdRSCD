@@ -114,7 +114,7 @@ def Train(model,
                     val_kappas = []
                     for val_A_img, val_B_img, val_lab in eval_loader():
                         val_pred_list = model(val_A_img, val_B_img)
-                        val_lab = val_lab.astype('int64')
+                        val_lab = val_lab[0].astype('int64')
                         # val_img = paddle.concat([val_A_img, val_B_img], axis=1)
                         # val_pred_list = model(val_img)
                         val_loss_list = loss_computation(
