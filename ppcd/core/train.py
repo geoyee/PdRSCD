@@ -135,8 +135,8 @@ def Train(model,
                     print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, \
                           acc: {:.4f}, class_acc: {}, kappa: {:.4f}" \
                           .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
-                          str(np.round(val_class_miou, 4)), np.mean(val_accs), str(np.round(val_class_acc, 4)), \
-                          np.mean(val_kappas)))
+                          str(np.round(val_class_miou, 4)), np.mean(val_accs), \
+                          str(np.round(val_class_acc, 4)), np.mean(val_kappas)))
                     writer.add_scalar(tag="eval/loss", step=iters, value=np.mean(val_losses))
                     writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_accs))
                     writer.add_scalar(tag="eval/miou", step=iters, value=np.mean(val_mious))
