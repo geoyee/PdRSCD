@@ -21,7 +21,8 @@ ppcd
   ├── metrics  # 包含指标评价的代码
   ├── models  # 包含网络模型、特殊层、层初始化等代码
   ├── traditions  # 包含一些传统计算方法的代码
-  └── transforms  # 包含数据增强的代码
+  ├── transforms  # 包含数据增强的代码
+  └── utils  # 包含其他代码，如计时等
 ```
 
 ## 使用入门
@@ -83,7 +84,7 @@ import ppcd.transforms as T  # 多种transforms方法可以查看ppcd.transforms
 train_transforms = [T.RandomFlip(), T.Resize(512)]
 val_transforms = [T.Resize(512)]
 # 使用数据列表构造对应的数据，预测数据记得把is_infer设置为True，这样数据读取每次只返回两张图片（没有label）
-train_data = CDataset('Dataset/train_list.txt', transforms=train_transforms)
+train_data = CDataset('Dataset/train_list.txt', transforms=train_transforms, shuffle=True)
 val_data = CDataset('Dataset/val_list.txt', transforms=val_transforms)
 infer_data = CDataset('Dataset/infer_list.txt', transforms=val_transforms, is_infer=True)
 # 使用分类数据
@@ -152,7 +153,7 @@ Infer(
 - [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
 - [ ] 添加FCM
 - [ ] 修改模型支持预处理后得到的单图像输入而不是两期图像
-- [ ] 添加多光谱变化检测数据标注
+- [ ] ?添加多光谱变化检测数据标注
 
 ## Git链接
 
