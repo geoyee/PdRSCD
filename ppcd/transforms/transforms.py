@@ -49,7 +49,7 @@ class Compose:
         if lab is None:
             return (A_img, B_img)
         else:
-            labels = [lab.astype('int64') for lab in labels]
+            labels = [label.astype('int64') for label in labels]
             return (A_img, B_img, labels)
 
 
