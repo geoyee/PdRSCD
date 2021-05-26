@@ -145,11 +145,13 @@ Infer(
 
 ## TODO
 
-- [x] AI Studio无gdal报错，当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取
 - [ ] 添加带地理坐标的划窗预测与拼接
-- [ ] 添加ETA，便于估算训练时间
+- [x] 添加ETA，便于估算训练时间
 - [ ] 添加F1、OA等评估指标
 - [ ] 添加pipy打包，可通过pip install
+- [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
+- [ ] 添加FCM
+- [ ] 修改模型支持预处理后得到的单图像输入而不是两期图像
 
 ## Git链接
 
