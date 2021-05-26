@@ -1,7 +1,7 @@
 import os
 import cv2
 import paddle
-from paddle.io import DataLoader
+from ppcd.datasets import CDataLoader
 
 
 def Infer(model, 
@@ -10,7 +10,7 @@ def Infer(model,
           save_img_path=None,
           threshold=0.5):
     # 数据读取器
-    infer_loader = DataLoader(infer_data, batch_size=1)
+    infer_loader = CDataLoader(infer_data, batch_size=1)
     # 开始预测
     if save_img_path is not None:
         if os.path.exists(save_img_path) == False:
