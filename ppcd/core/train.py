@@ -4,6 +4,7 @@ import paddle
 import paddle.nn.functional as F
 from paddle.io import DataLoader
 from ppcd.metrics import ComputAccuracy
+from ppcd.utils import TimeAverager, calculate_eta
 from visualdl import LogWriter
 import time
 
@@ -75,6 +76,9 @@ def Train(model,
     if pre_params_path is not None:
         para_state_dict = paddle.load(pre_params_path)
         model.set_dict(para_state_dict)
+    # 计时
+    batch_cost_averager = TimeAverager()
+    batch_start = time.time()
     # 开始训练
     with LogWriter(logdir=("./log/" + str(time.mktime(time.localtime())))) as writer:
         iters = 0
@@ -95,9 +99,14 @@ def Train(model,
                 loss.backward()
                 optimizer.step()
                 optimizer.clear_grad()
+                batch_cost_averager.record(time.time() - batch_start, num_samples=batch_size)
                 if (batch_id + 1) % log_batch == 0:
-                    print("[Train] epoch: {}, batch: {}, loss: {:.4f}".format(epoch_id + 1, batch_id + 1, loss.numpy()[0]))
+                    avg_train_batch_cost = batch_cost_averager.get_average()
+                    eta = calculate_eta((epoch * data_lens - iters), avg_train_batch_cost)
+                    print("[Train] epoch: {}, batch: {}, loss: {:.4f}, ips: {:.4f}, ETA: {}".format(
+                        epoch_id + 1, batch_id + 1, loss.numpy()[0], batch_cost_averager.get_ips_average(), eta))
                     writer.add_scalar(tag="train/loss", step=iters, value=loss.numpy()[0])
+                    batch_cost_averager.reset()
                 if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)):
                     model.eval()
                     val_losses = []
