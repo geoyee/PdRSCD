@@ -1,7 +1,6 @@
 import os
 import numpy as np
 import paddle
-import paddle.nn.functional as F
 from paddle.io import DataLoader
 from ppcd.metrics import ComputAccuracy
 from ppcd.utils import TimeAverager, calculate_eta
@@ -129,13 +128,15 @@ def Train(model,
                             val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
                         else:
                             val_pred = (val_pred_list[0] > threshold).astype('int64')
-                        val_miou, val_acc, val_kappa = ComputAccuracy(val_pred, val_lab)
+                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(val_pred, val_lab)
                         val_mious.append(val_miou)
                         val_accs.append(val_acc)
                         val_kappas.append(val_kappa)
-                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, acc: {:.4f}, kappa: {:.4f}" \
-                        .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
-                        np.mean(val_accs), np.mean(val_kappas)))
+                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, \
+                          acc: {:.4f}, class_acc: {}, kappa: {:.4f}" \
+                          .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
+                          str(np.round(val_class_miou, 4)), np.mean(val_accs), str(np.round(val_class_acc, 4)), \
+                          np.mean(val_kappas)))
                     writer.add_scalar(tag="eval/loss", step=iters, value=np.mean(val_losses))
                     writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_accs))
                     writer.add_scalar(tag="eval/miou", step=iters, value=np.mean(val_mious))

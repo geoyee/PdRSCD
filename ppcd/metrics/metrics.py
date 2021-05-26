@@ -128,4 +128,4 @@ def ComputAccuracy(preds, labs, num_classes=2, ignore_index=255):
     class_iou, miou = get_mean_iou(intersect_area, pred_area, label_area)
     class_acc, acc = get_accuracy(intersect_area, pred_area)
     kappa = get_kappa(intersect_area, pred_area, label_area)
-    return miou, acc, kappa
+    return miou, class_iou, acc, class_acc, kappa
