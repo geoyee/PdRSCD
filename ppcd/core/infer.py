@@ -19,6 +19,7 @@ def Infer(model,
     para_state_dict = paddle.load(params_path)
     model.set_dict(para_state_dict)
     for A_img, B_img, name in infer_loader():
+        name = name[0]
         pred_list = model(A_img, B_img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
