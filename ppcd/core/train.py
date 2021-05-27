@@ -6,6 +6,7 @@ from ppcd.metrics import ComputAccuracy
 from ppcd.utils import TimeAverager, calculate_eta
 from visualdl import LogWriter
 import time
+from tqdm import tqdm
 
 
 def check_logits_losses(logits_list, losses):
@@ -62,11 +63,7 @@ def Train(model,
           save_epoch=2,
           log_batch=10,
           threshold=0.5):
-    # 数据读取器
-    data_lens = len(train_data) // batch_size
-    train_loader = CDataLoader(train_data, batch_size=batch_size)
-    if eval_data is not None:
-        eval_loader = CDataLoader(eval_data, batch_size=batch_size)
+    data_lens = len(train_data) // batch_size  # 训练数据数
     # 创建模型保存文件夹
     if save_model_path is not None:
         if os.path.exists(save_model_path) == False:
@@ -81,9 +78,13 @@ def Train(model,
     # 开始训练
     with LogWriter(logdir=("./log/" + str(time.mktime(time.localtime())))) as writer:
         iters = 0
-        for epoch_id in range(epoch):
+        for epoch_id in range(epoch): 
             model.train()
-            for batch_id, (A_img, B_img, lab) in enumerate(train_loader()):
+            train_loader = CDataLoader(train_data, batch_size=batch_size, shuffle=True)  # 数据读取器
+            for batch_id, train_load_data in enumerate(train_loader):
+                if train_load_data is None:
+                    break
+                (A_img, B_img, lab) = train_load_data
                 iters += 1
                 pred_list = model(A_img, B_img)
                 # img = paddle.concat([A_img, B_img], axis=1)
@@ -106,15 +107,20 @@ def Train(model,
                         epoch_id + 1, batch_id + 1, loss.numpy()[0], batch_cost_averager.get_ips_average(), eta))
                     writer.add_scalar(tag="train/loss", step=iters, value=loss.numpy()[0])
                     batch_cost_averager.reset()
-                if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)):
+                if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)) and eval_data is not None:
                     model.eval()
                     val_losses = []
                     val_mious = []
                     val_accs = []
                     val_kappas = []
-                    for val_A_img, val_B_img, val_lab in eval_loader():
+                    eval_loader = CDataLoader(eval_data, batch_size=batch_size, is_val=True)
+                    for val_load_data in eval_loader:
+                        if val_load_data is None:
+                            break
+                        (val_A_img, val_B_img, val_lab) = val_load_data
                         val_pred_list = model(val_A_img, val_B_img)
-                        val_lab = val_lab[0].astype('int64')
+                        tmp_lab = [v_lab.astype('int64') for v_lab in val_lab]
+                        val_lab = tmp_lab
                         # val_img = paddle.concat([val_A_img, val_B_img], axis=1)
                         # val_pred_list = model(val_img)
                         val_loss_list = loss_computation(
@@ -128,15 +134,14 @@ def Train(model,
                             val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
                         else:
                             val_pred = (val_pred_list[0] > threshold).astype('int64')
-                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(val_pred, val_lab)
+                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(val_pred, val_lab[0])
                         val_mious.append(val_miou)
                         val_accs.append(val_acc)
                         val_kappas.append(val_kappa)
-                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, \
-                          acc: {:.4f}, class_acc: {}, kappa: {:.4f}" \
-                          .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
-                          str(np.round(val_class_miou, 4)), np.mean(val_accs), \
-                          str(np.round(val_class_acc, 4)), np.mean(val_kappas)))
+                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, acc: {:.4f}, class_acc: {}, kappa: {:.4f}" \
+                        .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
+                        str(np.round(val_class_miou, 4)), np.mean(val_accs), \
+                        str(np.round(val_class_acc, 4)), np.mean(val_kappas)))
                     writer.add_scalar(tag="eval/loss", step=iters, value=np.mean(val_losses))
                     writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_accs))
                     writer.add_scalar(tag="eval/miou", step=iters, value=np.mean(val_mious))

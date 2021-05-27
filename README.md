@@ -2,6 +2,13 @@
 
 PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨PaddlePaddle，仿造PaddleSeg制作的一个用于遥感变化检测的工具。其中主要的区别在于数据读取器和数据增强可以接收和同时处理两期多通道影像。可以基于此使用工具中自带的网络或搭建自己的网络快速进行变化检测任务的训练和预测。
 
+## 特点
+
+1. 适应两期多光谱图像的读取和增强
+2. 适应图标签、分类标签以及多标签输入和学习
+3. 网络多返回、多标签和多路损失之间的切换
+4. 适应单标签图输出及多标签图输出
+
 ## 现有资产
 
 1. [模型库](ppcd/models/README.md)
@@ -148,15 +155,16 @@ Infer(
 
 ## TODO
 
-- [ ] （重要，BUG）为了适应多标签和文件名传递，弃用io下的DataLoader后当前的DataLoader无法批次读取
+- [x] 弃用io下的DataLoader后当前的DataLoader产生大量问题
+- [ ] DataLoader完善
 - [ ] 添加带地理坐标的划窗预测与拼接
 - [x] 添加ETA，便于估算训练时间
+- [ ] 修复ETA结果错误
 - [ ] 添加F1、OA等评估指标
 - [ ] 添加pipy打包，可通过pip install
 - [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
 - [ ] 添加FCM
 - [ ] 修改模型支持预处理后得到的单图像输入而不是两期图像
-- [ ] （暂不考虑）光谱变化检测数据标注
 
 ## Git链接
 

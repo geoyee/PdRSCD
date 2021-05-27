@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 import paddle
+from math import ceil
 from paddle.fluid.layers import tensor
 from paddle.io import Dataset
 from ppcd.transforms import Compose
@@ -96,6 +97,9 @@ class CDataset(Dataset):
         if shuffle == True:
             random.shuffle(self.datas)
 
+    def refresh_data(self):
+        random.shuffle(self.datas)
+
     def __getitem__(self, index):
         if self.is_class:
             if self.is_infer:
@@ -131,27 +135,41 @@ class CDataset(Dataset):
 
 
 class CDataLoader(object):
-    def __init__(self, cdataset, batch_size):
+    def __init__(self, cdataset, batch_size, shuffle=False, is_val=False):
         self.cdataset = cdataset
+        if shuffle:
+            self.cdataset.refresh_data()
         self.batch_size = batch_size
-
-    def __len__(self):
-        return len(self.cdataset)
-
-    def __call__(self):
-        t1s = []
-        t2s = []
-        ques = []
-        for idx, (t1, t2, que) in enumerate(self.cdataset):
-            if idx == self.batch_size:
-                break
-            t1s.append(t1)
-            t2s.append(t2)
-            ques.append(que)
-        if isinstance(ques[0], list):
-            tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
-            ques = [paddle.to_tensor(tmp[i, :, : ,:, :]) for i in range(tmp.shape[0])]
+        self.is_val = is_val
+        if self.is_val:
+            self.index = iter(range(ceil(len(self.cdataset) / self.batch_size)))
         else:
-            if not isinstance(ques[0], str):
-                ques = paddle.to_tensor(ques)
-        yield paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques
+            self.index = iter(range(len(self.cdataset) // self.batch_size))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            index = next(self.index)
+            t1s = []
+            t2s = []
+            ques = []
+            start = index * self.batch_size
+            end = (index + 1) * self.batch_size
+            if end > len(self.cdataset):
+                end = len(self.cdataset)
+            for i in range(start, end, 1):
+                t1, t2, que = self.cdataset[i]
+                t1s.append(t1)
+                t2s.append(t2)
+                ques.append(que)
+            if isinstance(ques[0], list):
+                tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
+                ques = [paddle.to_tensor(tmp[i, :, : ,:, :]) for i in range(tmp.shape[0])]
+            else:
+                if not isinstance(ques[0], str):
+                    ques = paddle.to_tensor(ques)
+            return (paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques)
+        except StopIteration:
+            pass
