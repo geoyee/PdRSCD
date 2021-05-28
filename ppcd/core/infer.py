@@ -1,7 +1,7 @@
 import os
 import cv2
 import paddle
-from tqdm import tqdm
+# from tqdm import tqdm
 from ppcd.datasets import CDataLoader
 
 
@@ -19,7 +19,8 @@ def Infer(model,
     model.eval()
     para_state_dict = paddle.load(params_path)
     model.set_dict(para_state_dict)
-    for infer_load_data in tqdm(infer_loader):
+    lens = len(infer_data)
+    for idx, infer_load_data in enumerate(infer_loader):
         if infer_load_data is None:
             break
         (A_img, B_img, name) = infer_load_data
@@ -32,5 +33,5 @@ def Infer(model,
         else:
             save_img = ((pred_list[0] > threshold).numpy().astype('uint8') * 255).reshape([H, W])
         save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
-        # print(save_path)
+        print('[Infer] ' + str(idx) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)
