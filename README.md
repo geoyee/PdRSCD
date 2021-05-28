@@ -155,8 +155,8 @@ Infer(
 
 ## TODO
 
-- [x] 弃用io下的DataLoader后当前的DataLoader产生大量问题
-- [ ] DataLoader完善
+- [x] 弃用io下的DataLoader后当前的CDataLoader产生大量问题
+- [ ] CDataLoader完善
 - [ ] 添加带地理坐标的划窗预测与拼接
 - [x] 添加ETA，便于估算训练时间
 - [ ] 修复ETA结果错误
