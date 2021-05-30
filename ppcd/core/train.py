@@ -6,7 +6,7 @@ from ppcd.metrics import ComputAccuracy
 from ppcd.utils import TimeAverager, calculate_eta
 from visualdl import LogWriter
 import time
-from tqdm import tqdm
+# from tqdm import tqdm
 
 
 def check_logits_losses(logits_list, losses):
@@ -116,7 +116,7 @@ def Train(model,
                     val_accs = []
                     val_kappas = []
                     eval_loader = CDataLoader(eval_data, batch_size=batch_size, is_val=True)
-                    for val_load_data in tqdm(eval_loader):
+                    for val_load_data in eval_loader:
                         if val_load_data is None:
                             break
                         (val_A_img, val_B_img, val_lab) = val_load_data
