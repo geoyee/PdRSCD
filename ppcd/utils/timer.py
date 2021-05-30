@@ -3,28 +3,31 @@ import time
 
 class TimeAverager(object):
     def __init__(self):
+        self.cnt = 0
+        self.batch_time = 0
+        self.batch_samples = 0
         self.reset()
 
     def reset(self):
-        self._cnt = 0
-        self._total_time = 0
-        self._total_samples = 0
+        self.cnt = 0
+        self.batch_time = 0
+        self.batch_samples = 0
 
     def record(self, usetime, num_samples=None):
-        self._cnt += 1
-        self._total_time += usetime
+        self.cnt += 1
+        self.batch_time += usetime
         if num_samples:
-            self._total_samples += num_samples
+            self.batch_samples += num_samples
 
     def get_average(self):
-        if self._cnt == 0:
+        if self.cnt == 0:
             return 0
-        return self._total_time / float(self._cnt)
+        return self.batch_time / float(self.cnt)
 
     def get_ips_average(self):
-        if not self._total_samples or self._cnt == 0:
+        if not self.batch_samples or self.cnt == 0:
             return 0
-        return float(self._total_samples) / self._total_time
+        return float(self.batch_samples) / self.batch_time
 
 
 def calculate_eta(remaining_step, speed):

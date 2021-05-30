@@ -74,7 +74,6 @@ def Train(model,
         model.set_dict(para_state_dict)
     # 计时
     batch_cost_averager = TimeAverager()
-    batch_start = time.time()
     # 开始训练
     with LogWriter(logdir=("./log/" + str(time.mktime(time.localtime())))) as writer:
         iters = 0
@@ -82,6 +81,7 @@ def Train(model,
             model.train()
             train_loader = CDataLoader(train_data, batch_size=batch_size, shuffle=True)  # 数据读取器
             for batch_id, train_load_data in enumerate(train_loader):
+                batch_start = time.time()  # batch计时
                 if train_load_data is None:
                     break
                 (A_img, B_img, lab) = train_load_data
@@ -99,22 +99,24 @@ def Train(model,
                 loss.backward()
                 optimizer.step()
                 optimizer.clear_grad()
-                batch_cost_averager.record(time.time() - batch_start, num_samples=batch_size)
+                batch_cost_averager.record((time.time() - batch_start), num_samples=batch_size)
                 if (batch_id + 1) % log_batch == 0:
                     avg_train_batch_cost = batch_cost_averager.get_average()
                     eta = calculate_eta((epoch * data_lens - iters), avg_train_batch_cost)
                     print("[Train] epoch: {}, batch: {}, loss: {:.4f}, ips: {:.4f}, ETA: {}".format(
-                        epoch_id + 1, batch_id + 1, loss.numpy()[0], batch_cost_averager.get_ips_average(), eta))
+                        epoch_id + 1, batch_id + 1, loss.numpy()[0], \
+                        batch_cost_averager.get_ips_average(), eta))
                     writer.add_scalar(tag="train/loss", step=iters, value=loss.numpy()[0])
                     batch_cost_averager.reset()
-                if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)) and eval_data is not None:
+                if ((epoch_id + 1) % save_epoch) == 0 and (batch_id == (data_lens - 1)) and \
+                   eval_data is not None:
                     model.eval()
                     val_losses = []
                     val_mious = []
                     val_accs = []
                     val_kappas = []
                     eval_loader = CDataLoader(eval_data, batch_size=batch_size, is_val=True)
-                    for val_load_data in eval_loader:
+                    for val_load_data in tqdm(eval_loader):
                         if val_load_data is None:
                             break
                         (val_A_img, val_B_img, val_lab) = val_load_data
@@ -131,10 +133,12 @@ def Train(model,
                         val_losses.append(val_loss.numpy())
                         num_class = pred_list[0].shape[1]
                         if num_class != 1:
-                            val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, dtype='int64')
+                            val_pred = paddle.argmax(val_pred_list[0], axis=1, keepdim=True, \
+                                                     dtype='int64')
                         else:
                             val_pred = (val_pred_list[0] > threshold).astype('int64')
-                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(val_pred, val_lab[0])
+                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(
+                            val_pred, val_lab[0])
                         val_mious.append(val_miou)
                         val_accs.append(val_acc)
                         val_kappas.append(val_kappa)
@@ -146,5 +150,7 @@ def Train(model,
                     writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_accs))
                     writer.add_scalar(tag="eval/miou", step=iters, value=np.mean(val_mious))
                     writer.add_scalar(tag="eval/kappa", step=iters, value=np.mean(val_kappas))
-                    paddle.save(model.state_dict(), os.path.join(save_model_path, 'epoch_' + str(epoch_id)) + '.pdparams')
-                    paddle.save(optimizer.state_dict(), os.path.join(save_model_path, 'epoch_' + str(epoch_id)) + '.pdopt')
+                    paddle.save(model.state_dict(), os.path.join(save_model_path, 'epoch_' + \
+                                str(epoch_id)) + '.pdparams')
+                    paddle.save(optimizer.state_dict(), os.path.join(save_model_path, 'epoch_' + \
+                                str(epoch_id)) + '.pdopt')

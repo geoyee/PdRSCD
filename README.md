@@ -163,7 +163,7 @@ Infer(
 - [ ] CDataLoader完善
 - [ ] 添加带地理坐标的划窗预测与拼接
 - [x] 添加ETA，便于估算训练时间
-- [ ] 修复ETA结果错误
+- [x] 修复ETA结果错误
 - [ ] 添加F1、OA等评估指标
 - [ ] 添加pipy打包，可通过pip install
 - [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
