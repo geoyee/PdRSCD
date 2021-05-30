@@ -33,5 +33,5 @@ def Infer(model,
         else:
             save_img = ((pred_list[0] > threshold).numpy().astype('uint8') * 255).reshape([H, W])
         save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
-        print('[Infer] ' + str(idx) + '/' + str(lens) + ' file_path: ' + save_path)
+        print('[Infer] ' + str(idx + 1) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)

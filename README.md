@@ -2,6 +2,10 @@
 
 PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨PaddlePaddle，仿造PaddleSeg制作的一个用于遥感变化检测的工具。其中主要的区别在于数据读取器和数据增强可以接收和同时处理两期多通道影像。可以基于此使用工具中自带的网络或搭建自己的网络快速进行变化检测任务的训练和预测。
 
+## 在线项目实例
+
+AI Studio：[PdRSCD训练测试](https://aistudio.baidu.com/aistudio/projectdetail/2001007)
+
 ## 特点
 
 1. 适应两期多光谱图像的读取和增强
