@@ -11,7 +11,7 @@ AI Studio：[PdRSCD训练测试](https://aistudio.baidu.com/aistudio/projectdeta
 1. 适应两期多光谱图像的读取和增强
 2. 适应图标签、分类标签以及多标签输入和学习
 3. 网络多返回、多标签和多路损失之间的切换
-4. 适应单标签图输出及多标签图输出
+4. 适应单通道预测图及双通道预测图的输出（argmax与threshold）
 
 ## 现有资产
 
@@ -167,7 +167,7 @@ Infer(
 - [ ] 添加F1、OA等评估指标
 - [ ] 添加pipy打包，可通过pip install
 - [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
-- [ ] 添加FCM
+- [ ] 添加传统数据预处理方法，如拉伸等
 - [ ] 修改模型支持预处理后得到的单图像输入而不是两期图像
 
 ## Git链接
