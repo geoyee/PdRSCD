@@ -159,11 +159,11 @@ Infer(
 )
 ```
 
-*ps：当前更新后需要在paddlepaddle2.1.0上运行，否则会卡在CDataLoader上。CDataLoader还存在问题。
+*ps：当前更新后需要在paddlepaddle2.1.0上运行，否则会卡在CDataLoader上。除此之外CDataLoader可能还存在问题，例如在一个COU项目上卡住了，不知道原因，建议在2.1.0版本的GPU设备上运行【至少AI Studio的至尊GPU肯定是没问题的】。
 
 ## TODO
 
-- [ ] 【重要】CDataLoader完善改进（存在bug：有些项目在2.1.0下也会卡在DataLoader上）
+- [ ] CDataLoader完善改进
 - [ ] 添加大图随机/划框裁剪训练
 - [ ] 添加带地理坐标的划窗预测与拼接
 - [ ] 添加F1、OA等评估指标
