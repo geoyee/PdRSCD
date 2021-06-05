@@ -1,1 +1,1 @@
-from .losses import BCELoss, TripletLoss, DiceLoss, MixedLoss, BCLoss, ConstLoss, LabelL1Loss
+from .losses import *

@@ -10,7 +10,11 @@ def open_tif(geoimg_path, to_np=False):
     if to_np == False:
         return geoimg
     else:
-        return geoimg.ReadAsArray().transpose((1, 2, 0))  # 多波段图像默认是[c, h, w]
+        return tif2array(geoimg), get_geoinfo(geoimg)
+
+
+def tif2array(geoimg):
+    return geoimg.ReadAsArray().transpose((1, 2, 0))  # 多波段图像默认是[c, h, w]
 
 
 def get_geoinfo(geoimg):
@@ -41,5 +45,10 @@ def save_tif(img, geoinfo, save_path):
         datatype)
     dataset.SetProjection(geoinfo['proj'])  # 写入投影
     dataset.SetGeoTransform(geoinfo['geotrans'])  # 写入仿射变换参数
-    dataset.GetRasterBand(1).WriteArray(img)
+    C = img.shape[-1]
+    if C == 1:
+        dataset.GetRasterBand(1).WriteArray(img)
+    else:
+        for i_c in range(C):
+            dataset.GetRasterBand(i_c + 1).WriteArray(img[:, :, i_c])
     del dataset  # 删除与tif的连接

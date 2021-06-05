@@ -22,7 +22,7 @@ AI Studio：[PdRSCD训练测试](https://aistudio.baidu.com/aistudio/projectdeta
 
 ## 代码结构
 
-PdRSCD的主要代码在ppcd中，组织如下。可以根据自己的任务修改和添加下面的代码。
+PdRSCD的主要代码在ppcd中，文件夹组织如下。可以根据自己的任务修改和添加下面的代码。
 
 ```
 ppcd
@@ -31,10 +31,13 @@ ppcd
   ├── losses  # 包含损失函数的代码
   ├── metrics  # 包含指标评价的代码
   ├── models  # 包含网络模型、特殊层、层初始化等代码
+  |     ├── backbone  # 骨干网络
+  |     └── layers  # 各种工具层
   ├── traditions  # 包含一些传统计算方法的代码
   ├── transforms  # 包含数据增强的代码
   ├── utils  # 包含其他代码，如计时等
   └── tools  # 包含工具代码，如分块、图像查看器等
+        └── view  # 包含tif查看工具
 ```
 
 ## 使用入门
@@ -156,21 +159,18 @@ Infer(
 )
 ```
 
-*ps：当前更新后需要在paddlepaddle2.1.0上运行，否则会卡在DataLoader上。
+*ps：当前更新后需要在paddlepaddle2.1.0上运行，否则会卡在CDataLoader上。CDataLoader还存在问题。
 
 ## TODO
 
-- [x] 弃用io下的DataLoader后当前的CDataLoader产生大量问题
-- [ ] CDataLoader完善（bug：有些项目在2.1.0下也会卡在DataLoader上）
+- [ ] 【重要】CDataLoader完善改进（存在bug：有些项目在2.1.0下也会卡在DataLoader上）
+- [ ] 添加大图随机/划框裁剪训练
 - [ ] 添加带地理坐标的划窗预测与拼接
-- [x] 添加ETA，便于估算训练时间
-- [x] 修复ETA结果错误
 - [ ] 添加F1、OA等评估指标
-- [ ] 添加pipy打包，可通过pip install
-- [x] 添加判断当无法import gdal时将禁用tif/img的读取保证其他图像可以继续读取（AI Studio无gdal报错）
-- [ ] 添加传统数据预处理方法，如拉伸等
-- [ ] 修改模型支持预处理后得到的单图像输入而不是两期图像
-- [ ] 增加tif的查看器
+- [ ] 添加数据预增强方法，如线性拉伸、双边滤波、去雾等
+- [ ] 修改模型和数据加载支持预处理后得到的单图像输入而不是两期图像
+- [ ] 添加pipy打包，可通过pip install安装
+- [ ] 增加多波段的带GUI的TIF的查看器
 
 ## Git链接
 
