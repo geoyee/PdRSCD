@@ -4,7 +4,7 @@ import numpy as np
 
 def random_out(bimg, oh, ow):
     '''
-        根据输入的图像和随机输出的大小随机输出块
+        根据输入的图像[H, W, C]和随机输出的大小随机输出块
         oh/ow (int/list)
     '''
     H, W, _ = bimg.shape
@@ -23,7 +23,7 @@ def random_out(bimg, oh, ow):
 
 def split_out(bimg, row, col, index):
     '''
-        根据输入的图像和行列数以及索引输出对应图像块
+        根据输入的图像[H, W, C]和行列数以及索引输出对应图像块
         index (list)
     '''
     H, W, _ = bimg.shape

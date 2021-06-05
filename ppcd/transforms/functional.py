@@ -18,7 +18,7 @@ def read_img(img_path, npd_shape, is_lab, is_255=True):
     finally:
         if img_format == 'tiff' or ext == '.img':
             if ipt_gdal == True:
-                img_data = gdal.open(img_path).readasarray()
+                img_data = gdal.Open(img_path).ReadAsArray()
                 return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[c, h, w]
             else:
                 raise Exception('Unable to open TIF/IMG image without GDAL!')
