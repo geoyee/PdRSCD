@@ -29,6 +29,13 @@ def split_out(bimg, row, col, index):
     H, W, _ = bimg.shape
     if not isinstance(index, list):
         raise ValueError('index must be list!')
+    # 扩展不够的
+    h_add = row - (H % row)
+    w_add = col - (W % col)
+    if h_add != row or w_add != col:
+        print('pad', h_add, w_add)
+        bimg = np.pad(bimg, ((0, h_add), (0, w_add), (0, 0)), 'constant', )
+        H, W, _ = bimg.shape
     cell_h = H // row
     cell_w = W // col
     return bimg[(index[0] * cell_h):((index[0] + 1) * cell_h), \
