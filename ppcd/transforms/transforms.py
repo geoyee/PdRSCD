@@ -29,18 +29,24 @@ class Compose:
     def __call__(self, A_img, B_img, lab=None):
         """
         Args:
-            A_img (str): 时段一图像路径 (.tif/.img/.npy/.jpg)
-            B_img (str): 时段二图像路径 (.tif/.img/.npy/.jpg)
-            lab (list): 标注图像路径 (.png)，默认为None
+            A_img (str/ndarray): 时段一图像路径 (.tif/.img/.npy/.jpg)
+            B_img (str/ndarray): 时段二图像路径 (.tif/.img/.npy/.jpg)
+            lab (list/ndarray): 标注图像路径 (.png)，默认为None
+            当为ndarray时，就是大图像处理的时候
         """
-        A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
-        B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
-        if lab is not None:
-            labs = []
-            for lab_pth in lab:
-                labs.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
-        else:
-            labs = None
+        if isinstance(A_img, str) and isinstance(B_img, str):
+            A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
+            B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
+            if lab is not None:
+                labs = []
+                for lab_pth in lab:
+                    labs.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
+            else:
+                labs = None
+        else:  # 如果进来的直接就是图像就不用再读取一次了
+            A_img = A_img
+            B_img = B_img
+            labs = [lab] if lab is not None else None
         # 数据增强
         labels = []
         if self.transforms is not None:

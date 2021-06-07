@@ -3,9 +3,12 @@ import random
 import numpy as np
 import paddle
 from math import ceil
-from paddle.fluid.layers import tensor
+from PIL import Image
+# from paddle.fluid.layers import tensor
+# from paddle.fluid.layers.detection import distribute_fpn_proposals
 from paddle.io import Dataset
 from ppcd.transforms import Compose
+from ppcd.tools import random_out, split_out, open_tif
 
 
 def create_list(dataset_path, mode='train', shuffle=False, label_end='.png', labels_num=1):
@@ -173,3 +176,43 @@ class CDataLoader(object):
             return (paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques)
         except StopIteration:
             pass
+
+
+# 大范围的遥感数据
+class BDataset(Dataset):
+    def __init__(self, t1_path, t2_path, lab_path=None, c_size=[512, 512], \
+                 transforms=None, out_mode='random', is_255=True, is_tif=True):
+        self.transforms = Compose(transforms=transforms, is_255=is_255)
+        if is_tif == False:
+            self.t1 = np.asarray(Image.open(t1_path))
+            self.t2 = np.asarray(Image.open(t2_path))
+            self.lab = np.asarray(Image.open(lab_path)) if lab_path is not None else None
+        else:
+            self.t1, self.geoinfo = open_tif(t1_path, to_np=True)
+            self.t2, _ = open_tif(t2_path, to_np=True)
+            self.lab, _ = open_tif(lab_path, to_np=True) if lab_path is not None else None
+        self.c_size = c_size
+        self.is_infer = True if self.lab_path is None else False
+        self.out_mode = 'slide' if self.is_infer == True else out_mode
+
+    def __getitem__(self, index):
+        # 数据分配
+        if self.lab is None:
+            imgs = [self.t1, self.t2]
+        else:
+            imgs = [self.t1, self.t2, self.lab]
+        if self.out_mode == 'slide':
+            H, W, _ = self.t1.shape
+            row = ceil(H / self.c_size[0])
+            col = ceil(W / self.c_size[1])
+            res = split_out(imgs, row, col, index)
+        else:
+            res = random_out(imgs, self.c_size[0], self.c_size[1])
+        t1, t2 = res[:2]
+        lab = res[-1] if len(res) == 3 else None
+        # 数据增强
+        A_img, B_img, labs = self.transforms(t1, t2, [lab])
+        if self.is_infer == False:
+            return A_img, B_img, labs
+        else:
+            return A_img, B_img
