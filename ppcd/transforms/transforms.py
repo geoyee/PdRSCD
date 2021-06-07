@@ -48,7 +48,7 @@ class Compose:
             B_img = B_img
             labs = [lab] if lab is not None else None
         # 数据增强
-        labels = labs.copy()
+        labels = labs.copy() if labs != None else []
         if self.transforms is not None:
             for op in self.transforms:
                 A_img, B_img, labels = op(A_img, B_img, labs)

@@ -194,6 +194,7 @@ class BDataset(Dataset):
         self.c_size = c_size
         self.is_infer = True if lab_path is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
+        self.lens = ceil(self.t1.shape[0] / c_size[0]) * ceil(self.t1.shape[1] / c_size[1])
 
     def __getitem__(self, index):
         # 数据分配
@@ -224,3 +225,6 @@ class BDataset(Dataset):
             return A_img, B_img, labs
         else:
             return A_img, B_img
+
+    def __len__(self):
+        return self.lens
