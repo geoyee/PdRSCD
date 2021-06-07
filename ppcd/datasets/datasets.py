@@ -178,7 +178,7 @@ class CDataLoader(object):
             pass
 
 
-# 大范围的遥感数据
+# 大范围的遥感数据，配合原生的DataLoader使用
 class BDataset(Dataset):
     def __init__(self, t1_path, t2_path, lab_path=None, c_size=[512, 512], \
                  transforms=None, out_mode='random', is_255=True, is_tif=True):
@@ -192,7 +192,7 @@ class BDataset(Dataset):
             self.t2, _ = open_tif(t2_path, to_np=True)
             self.lab, _ = open_tif(lab_path, to_np=True) if lab_path is not None else None
         self.c_size = c_size
-        self.is_infer = True if self.lab_path is None else False
+        self.is_infer = True if lab_path is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
 
     def __getitem__(self, index):
@@ -204,14 +204,22 @@ class BDataset(Dataset):
         if self.out_mode == 'slide':
             H, W, _ = self.t1.shape
             row = ceil(H / self.c_size[0])
-            col = ceil(W / self.c_size[1])
-            res = split_out(imgs, row, col, index)
+            col = ceil(W / self.c_size[1]) 
+            # 计算索引
+            idr = index // col
+            idc = index % col
+            # 全部索引完毕
+            if idr == row:
+                return None
+            idx = [idr, idc]
+            # print('row, col, idx:', row, col, idx)
+            res = split_out(imgs, row, col, idx)
         else:
             res = random_out(imgs, self.c_size[0], self.c_size[1])
         t1, t2 = res[:2]
         lab = res[-1] if len(res) == 3 else None
         # 数据增强
-        A_img, B_img, labs = self.transforms(t1, t2, [lab])
+        A_img, B_img, labs = self.transforms(t1, t2, lab)
         if self.is_infer == False:
             return A_img, B_img, labs
         else:
