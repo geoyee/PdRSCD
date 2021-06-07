@@ -10,3 +10,4 @@ filelock
 scipy
 prettytable
 gdal
+qtpy

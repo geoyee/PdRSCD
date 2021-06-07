@@ -81,7 +81,7 @@ def get_accuracy(intersect_area, pred_area):
     """
     Calculate accuracy
     Args:
-        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes..
+        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes.
         pred_area (Tensor): The prediction area on all classes.
     Returns:
         np.ndarray: accuracy on all classes.
