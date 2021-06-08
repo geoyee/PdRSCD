@@ -3,6 +3,10 @@
 __pycache__
 
 .test_img
+*.tif
+*.tif.aux.xml
+*.tif.ovr
+*.tif.enp
 *.tiff
 *.tiff.aux.xml
 *.tiff.ovr
