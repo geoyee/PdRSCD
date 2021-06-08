@@ -1,6 +1,7 @@
 import sys
 import random
 import numpy as np
+from math import ceil
 
 
 def random_out(bimgs, oh, ow):
@@ -10,7 +11,7 @@ def random_out(bimgs, oh, ow):
     '''
     seed = random.randrange(sys.maxsize)
     rng = random.Random(seed)  # 刷新种子
-    H, W, _ = bimgs[0].shape
+    H, W = bimgs[0].shape[:2]
     if isinstance(oh, list) and isinstance(ow, list):
         oh = rng.randint(oh[0], oh[1])
         ow = rng.randint(ow[0], ow[1])
@@ -31,30 +32,42 @@ def random_out(bimgs, oh, ow):
     return result
 
 
-def split_out(bimgs, row, col, index):
+def slide_out(bimgs, row, col, index, c_size=None):
     '''
         根据输入的图像[H, W, C]和行列数以及索引输出对应图像块
         index (list)
     '''
-    H, W, _ = bimgs[0].shape
+    H, W = bimgs[0].shape[:2]
     if not isinstance(index, list):
         raise ValueError('index must be list!')
+    if c_size is None:
+        c_size = [ceil(H / row), ceil(W / col)]
     # 扩展不够的
-    h_add = row - (H % row)
-    w_add = col - (W % col)
-    if h_add != row or w_add != col:
-        for bimg in bimgs:
-            bimg = np.pad(bimg, ((0, h_add), (0, w_add), (0, 0)), 'constant')
-        H, W, _ = bimgs[0].shape
-    cell_h = H // row
-    cell_w = W // col
+    h_new = row * c_size[0]
+    w_new = col * c_size[1]
+    tmps = []
+    if h_new != H or w_new != W:
+        for i in range(len(bimgs)):
+            bimg = bimgs[i]
+            if len(bimg.shape) == 2:
+                tmp = np.zeros((h_new, w_new))
+                tmp[:bimg.shape[0], :bimg.shape[1]] = bimg
+            else:
+                tmp = np.zeros((h_new, w_new, bimg.shape[-1]))
+                tmp[:bimg.shape[0], :bimg.shape[1], :] = bimg
+            tmps.append(tmp)
+        H, W = tmps[0].shape[:2]
+    else:
+        tmps = bimgs
+    cell_h = c_size[0]
+    cell_w = c_size[1]
     result = []
-    for i in range(len(bimgs)):
-        if len(bimgs[i].shape) == 2:
-            result.append(bimgs[i][(index[0] * cell_h):((index[0] + 1) * cell_h), \
+    for i in range(len(tmps)):
+        if len(tmps[i].shape) == 2:
+            result.append(tmps[i][(index[0] * cell_h):((index[0] + 1) * cell_h), \
                                    (index[1] * cell_w):((index[1] + 1) * cell_w)])
         else:
-            result.append(bimgs[i][(index[0] * cell_h):((index[0] + 1) * cell_h), \
+            result.append(tmps[i][(index[0] * cell_h):((index[0] + 1) * cell_h), \
                                    (index[1] * cell_w):((index[1] + 1) * cell_w), :])
     return result
 
@@ -62,12 +75,10 @@ def split_out(bimgs, row, col, index):
 def split_eval(bimgs, rate=0.8, direction='H'):
     '''
         将图像划分为两个部分，训练集和测试集
-        TODO：保存文件
-        TODO：是否删除源文件
     '''
     if rate <=0 or rate >= 1:
         raise ValueError('the value of rate must be between 0 and 1!')
-    H, W, _ = bimgs[0].shape
+    H, W = bimgs[0].shape[:2]
     train_imgs = []
     val_imgs = []
     for i in range(len(bimgs)):
