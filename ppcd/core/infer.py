@@ -49,7 +49,7 @@ def Slide_Infer(model,
     # 信息修改与读取
     infer_data.out_mode = 'slide'  # 滑框模式
     raw_size = infer_data.raw_size  # 原图大小
-    is_tif = infer_data.is_fif
+    is_tif = infer_data.is_tif
     if infer_data.is_tif == True:
         geoinf = infer_data.geoinf
     # 数据读取器
@@ -72,11 +72,11 @@ def Slide_Infer(model,
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]
         if num_class != 1:
-            inf_imgs.append(paddle.argmax(pred_list[0], axis=1). \
-                            squeeze().numpy() * 255).astype('uint8')
+            inf_imgs.append((paddle.argmax(pred_list[0], axis=1). \
+                            squeeze().numpy() * 255).astype('uint8'))
         else:
-            inf_imgs.append((pred_list[0] > threshold).numpy(). \
-                             astype('uint8') * 255).reshape([H, W])  
+            inf_imgs.append(((pred_list[0] > threshold).numpy(). \
+                             astype('uint8') * 255).reshape([H, W]))
         print('[Infer] ' + str(idx + 1) + '/' + str(lens))
     fix_img = splicing_list(inf_imgs, raw_size)  # 拼接
     if is_tif == True:

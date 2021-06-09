@@ -183,6 +183,7 @@ class BDataset(Dataset):
         '''
             t1、t2以及lab (str/ndarray)
         '''
+        self.is_tif = is_tif
         self.transforms = Compose(transforms=transforms, is_255=is_255)
         if isinstance(t1_source, str) and isinstance(t2_source, str):
             if is_tif == False:
