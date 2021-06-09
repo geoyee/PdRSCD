@@ -4,7 +4,9 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 
 ## 在线项目实例
 
-AI Studio：[PdRSCD训练测试](https://aistudio.baidu.com/aistudio/projectdetail/2001007)
+1. [PdRSCD训练测试](https://aistudio.baidu.com/aistudio/projectdetail/2001007)
+
+2. [[新]PdRSCD大图滑框测试](https://aistudio.baidu.com/aistudio/projectdetail/2056237)
 
 ## 特点
 
