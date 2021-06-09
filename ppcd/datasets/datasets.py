@@ -197,6 +197,7 @@ class BDataset(Dataset):
             self.t1 = t1_source
             self.t2 = t2_source
             self.lab = lab_source if lab_source is not None else None
+        self.raw_size = [self.t1.shape[0], self.t1.shape[1]]  # 原始大小
         self.c_size = c_size
         self.is_infer = True if lab_source is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
@@ -209,9 +210,10 @@ class BDataset(Dataset):
         else:
             imgs = [self.t1, self.t2, self.lab]
         if self.out_mode == 'slide':
-            H, W, _ = self.t1.shape
+            H, W = self.raw_size
             row = ceil(H / self.c_size[0])
-            col = ceil(W / self.c_size[1]) 
+            col = ceil(W / self.c_size[1])
+            # print('dataset: row, col:', row, col)
             # 计算索引
             idr = index // col
             idc = index % col
@@ -227,12 +229,14 @@ class BDataset(Dataset):
         lab = res[-1] if len(res) == 3 else None
         # 数据增强
         A_img, B_img, labs = self.transforms(t1, t2, lab)
+        A_img = A_img.transpose((2, 0, 1)).astype('float32')
+        B_img = B_img.transpose((2, 0, 1)).astype('float32')
         if self.is_infer == False:
             for i in range(len(labs)):
                 labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
-            return A_img.transpose((2, 0, 1)), B_img.transpose((2, 0, 1)), labs
+            return A_img, B_img, labs
         else:
-            return A_img.transpose((2, 0, 1)), B_img.transpose((2, 0, 1))
+            return A_img, B_img
 
     def __len__(self):
         return self.lens

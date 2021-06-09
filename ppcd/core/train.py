@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import paddle
+from paddle.io import DataLoader
 from ppcd.datasets import CDataLoader
 from ppcd.metrics import ComputAccuracy
 from ppcd.utils import TimeAverager, calculate_eta
@@ -62,7 +63,9 @@ def Train(model,
           save_model_path=None,
           save_epoch=2,
           log_batch=10,
-          threshold=0.5):
+          threshold=0.5,
+          big_picture=False):
+    dataloader = CDataLoader if big_picture == False else DataLoader
     data_lens = len(train_data) // batch_size  # 训练数据数
     # 创建模型保存文件夹
     if save_model_path is not None:
@@ -79,7 +82,7 @@ def Train(model,
         iters = 0
         for epoch_id in range(epoch): 
             model.train()
-            train_loader = CDataLoader(train_data, batch_size=batch_size, shuffle=True)  # 数据读取器
+            train_loader = dataloader(train_data, batch_size=batch_size, shuffle=True)  # 数据读取器
             for batch_id, train_load_data in enumerate(train_loader):
                 batch_start = time.time()  # batch计时
                 if train_load_data is None:
@@ -115,7 +118,7 @@ def Train(model,
                     val_mious = []
                     val_accs = []
                     val_kappas = []
-                    eval_loader = CDataLoader(eval_data, batch_size=batch_size, is_val=True)
+                    eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
                     for val_load_data in eval_loader:
                         if val_load_data is None:
                             break
