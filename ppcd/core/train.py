@@ -64,8 +64,8 @@ def Train(model,
           save_epoch=2,
           log_batch=10,
           threshold=0.5,
-          big_picture=False):
-    dataloader = CDataLoader if big_picture == False else DataLoader
+          loader='CDataLoader'):  # loader内部测试
+    dataloader = CDataLoader if loader == 'CDataLoader' else DataLoader
     data_lens = len(train_data) // batch_size  # 训练数据数
     # 创建模型保存文件夹
     if save_model_path is not None:
@@ -118,7 +118,10 @@ def Train(model,
                     val_mious = []
                     val_accs = []
                     val_kappas = []
-                    eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
+                    if isinstance(dataloader, CDataLoader):  # 这个地方待改进
+                        eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
+                    else:
+                        eval_loader = dataloader(eval_data, batch_size=batch_size)
                     for val_load_data in eval_loader:
                         if val_load_data is None:
                             break

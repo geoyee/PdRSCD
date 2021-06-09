@@ -203,6 +203,9 @@ class BDataset(Dataset):
         self.out_mode = 'slide' if self.is_infer == True else out_mode
         self.lens = ceil(self.t1.shape[0] / c_size[0]) * ceil(self.t1.shape[1] / c_size[1])
 
+    def refresh_data(self):
+        pass
+
     def __getitem__(self, index):
         # 数据分配
         if self.lab is None:
@@ -228,7 +231,10 @@ class BDataset(Dataset):
         t1, t2 = res[:2]
         lab = res[-1] if len(res) == 3 else None
         # 数据增强
-        A_img, B_img, labs = self.transforms(t1, t2, lab)
+        if self.is_infer:
+            A_img, B_img = self.transforms(t1, t2, lab)
+        else:
+            A_img, B_img, labs = self.transforms(t1, t2, lab)
         A_img = A_img.transpose((2, 0, 1)).astype('float32')
         B_img = B_img.transpose((2, 0, 1)).astype('float32')
         if self.is_infer == False:

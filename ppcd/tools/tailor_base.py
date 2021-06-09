@@ -7,22 +7,19 @@ from math import ceil
 def random_out(bimgs, oh, ow):
     '''
         根据输入的图像[H, W, C]和随机输出的大小随机输出块
-        oh/ow (int/list)
+        oh/ow (int)
     '''
     seed = random.randrange(sys.maxsize)
-    rng = random.Random(seed)  # 刷新种子
+    random.seed(seed)  # 刷新种子
     H, W = bimgs[0].shape[:2]
-    if isinstance(oh, list) and isinstance(ow, list):
-        oh = rng.randint(oh[0], oh[1])
-        ow = rng.randint(ow[0], ow[1])
-    elif not (isinstance(oh, int) or isinstance(oh, list)) and \
-         not (isinstance(ow, int) or isinstance(ow, list)):
-        raise ValueError('oh and ow must be int or list!')
+    # print('H, W, oh, ow:', H, W, oh, ow)
+    if not isinstance(oh, int) and not isinstance(ow, int):
+        raise ValueError('oh and ow must be int!')
     h_range = H - oh
     w_range = W - ow
-    x = rng.randint(0, w_range)
-    y = rng.randint(0, h_range)
-    # print(x, y, oh, ow)
+    x = random.randint(0, h_range)
+    y = random.randint(0, w_range)
+    # print('x, y:', x, y)
     result = []
     for i in range(len(bimgs)):
         if len(bimgs[i].shape) == 2:
