@@ -179,17 +179,17 @@ class CDataLoader(object):
 # 大范围的遥感数据，配合原生的DataLoader使用
 class BDataset(Dataset):
     def __init__(self, t1_source, t2_source, lab_source=None, c_size=[512, 512], \
-                 transforms=None, out_mode='random', is_255=True, is_tif=True):
+                 transforms=None, out_mode='random', is_255=True, is_tif=True, geoinfo=None):
         '''
             t1、t2以及lab (str/ndarray)
         '''
-        self.is_tif = is_tif
         self.transforms = Compose(transforms=transforms, is_255=is_255)
         if isinstance(t1_source, str) and isinstance(t2_source, str):
             if is_tif == False:
                 self.t1 = np.asarray(Image.open(t1_source))
                 self.t2 = np.asarray(Image.open(t2_source))
                 self.lab = np.asarray(Image.open(lab_source)) if lab_source is not None else None
+                self.geoinfo = None
             else:
                 self.t1, self.geoinfo = open_tif(t1_source, to_np=True)
                 self.t2, _ = open_tif(t2_source, to_np=True)
@@ -198,8 +198,10 @@ class BDataset(Dataset):
             self.t1 = t1_source
             self.t2 = t2_source
             self.lab = lab_source if lab_source is not None else None
+            self.geoinfo = geoinfo if geoinfo is not None else None
         self.raw_size = [self.t1.shape[0], self.t1.shape[1]]  # 原始大小
         self.c_size = c_size
+        self.is_tif = True if geoinfo is not None else is_tif
         self.is_infer = True if lab_source is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
         self.lens = ceil(self.t1.shape[0] / c_size[0]) * ceil(self.t1.shape[1] / c_size[1])

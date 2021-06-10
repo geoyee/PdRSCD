@@ -59,7 +59,7 @@ def save_tif(img, geoinfo, save_path):
             datatype)
         dataset.SetProjection(geoinfo['proj'])  # 写入投影
         dataset.SetGeoTransform(geoinfo['geotrans'])  # 写入仿射变换参数
-        C = img.shape[-1]
+        C = img.shape[-1] if len(img.shape) == 3 else 1
         if C == 1:
             dataset.GetRasterBand(1).WriteArray(img)
         else:

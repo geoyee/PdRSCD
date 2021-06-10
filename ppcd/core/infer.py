@@ -1,7 +1,7 @@
 import os
 import cv2
 import paddle
-# from tqdm import tqdm
+from tqdm import tqdm
 from paddle.io import DataLoader
 from ppcd.datasets import CDataLoader
 from ppcd.tools import splicing_list, save_tif
@@ -51,7 +51,7 @@ def Slide_Infer(model,
     raw_size = infer_data.raw_size  # 原图大小
     is_tif = infer_data.is_tif
     if infer_data.is_tif == True:
-        geoinf = infer_data.geoinf
+        geoinfo = infer_data.geoinfo
     # 数据读取器
     infer_loader = DataLoader(infer_data, batch_size=1)
     # 开始预测
@@ -63,7 +63,8 @@ def Slide_Infer(model,
     model.set_dict(para_state_dict)
     lens = len(infer_data)
     inf_imgs = []  # 保存块
-    for idx, infer_load_data in enumerate(infer_loader):
+    # for idx, infer_load_data in qenumerate(infer_loader):\
+    for infer_load_data in tqdm(infer_loader):
         if infer_load_data is None:
             break
         (A_img, B_img) = infer_load_data
@@ -77,11 +78,11 @@ def Slide_Infer(model,
         else:
             inf_imgs.append(((pred_list[0] > threshold).numpy(). \
                              astype('uint8') * 255).reshape([H, W]))
-        print('[Infer] ' + str(idx + 1) + '/' + str(lens))
+        # print('[Infer] ' + str(idx + 1) + '/' + str(lens))
     fix_img = splicing_list(inf_imgs, raw_size)  # 拼接
     if is_tif == True:
         save_path = os.path.join(save_img_path, (name + '.tif'))
-        save_tif(fix_img, geoinf, save_path)
+        save_tif(fix_img, geoinfo, save_path)
     else:
         save_path = os.path.join(save_img_path, (name + '.png'))
         cv2.imwrite(save_path, fix_img)

@@ -2,7 +2,7 @@
 
 __pycache__
 
-.test_img
+test_img
 *.tif
 *.tif.aux.xml
 *.tif.ovr
@@ -14,3 +14,6 @@ __pycache__
 
 test.py
 
+*.pdparams
+
+output_infer
