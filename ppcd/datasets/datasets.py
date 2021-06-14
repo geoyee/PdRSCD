@@ -235,7 +235,7 @@ class BDataset(Dataset):
         lab = res[-1] if len(res) == 3 else None
         # 数据增强
         if self.is_infer:
-            A_img, B_img = self.transforms(t1, t2, lab)
+            A_img, B_img = self.transforms(t1, t2, None)
         else:
             A_img, B_img, labs = self.transforms(t1, t2, lab)
         A_img = A_img.transpose((2, 0, 1)).astype('float32')

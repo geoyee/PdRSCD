@@ -48,14 +48,13 @@ class Compose:
             B_img = B_img
             labs = [lab] if lab is not None else None
         # 数据增强
-        labels = labs.copy() if labs != None else []
         if self.transforms is not None:
             for op in self.transforms:
-                A_img, B_img, labels = op(A_img, B_img, labs)
+                A_img, B_img, labs = op(A_img, B_img, labs)
         if lab is None:
             return (A_img, B_img)
         else:
-            labels = [label.astype('int64') for label in labels]
+            labels = [label.astype('int64') for label in labs]
             return (A_img, B_img, labels)
 
 
