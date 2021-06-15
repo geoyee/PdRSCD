@@ -568,5 +568,5 @@ class HistogramMatching:
         self.band_num = band_num
 
     def __call__(self, A_img, B_img, label=None):
-        B_img = func.histogram_matching(B_img, A_img, self.bit_num, self.band_num)
-        return (A_img, B_img, label)
+        def_B_img = func.histogram_matching(B_img, A_img, self.band_num, self.bit_num)
+        return (A_img, def_B_img, label)
