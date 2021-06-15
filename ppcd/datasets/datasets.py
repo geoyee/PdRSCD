@@ -176,7 +176,7 @@ class CDataLoader(object):
             pass
 
 
-# 大范围的遥感数据，配合原生的DataLoader使用
+# 大范围的遥感数据
 class BDataset(Dataset):
     def __init__(self, t1_source, t2_source, lab_source=None, c_size=[512, 512], \
                  transforms=None, out_mode='random', is_255=True, is_tif=True, geoinfo=None):
