@@ -11,6 +11,7 @@ test_img
 *.tiff.aux.xml
 *.tiff.ovr
 *.tiff.enp
+*.jpg
 
 test.py
 
