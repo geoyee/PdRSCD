@@ -38,7 +38,7 @@ def bilateral_filtering(image):
     return dst
 
 
-def deHaze(m, r=81, eps=0.001, w=0.95, maxV1=0.80, bGamma=False):
+def de_haze(m, r=81, eps=0.001, w=0.95, maxV1=0.80, bGamma=False):
     '''
         暗通道先验去雾
     '''

@@ -550,3 +550,23 @@ class ExchangeTime:
 
     def __call__(self, A_img, B_img, label=None):
         return (B_img, A_img, label)
+
+
+# ----- histogram -----
+class HistogramMatching:
+    """
+    将第二时段的直方图规定到第一时段
+    Args:
+        bit_num (int): 图像的位数，默认为8
+        band_num (int): 操作的波段数，默认为3
+    """
+    def __init__(self, bit_num=8, band_num=3):
+        if bit_num not in [8, 16, 24]:
+            raise ValueError('{} is not effective bit_num, bit_num should be one of 8, 16, 24.'
+                             .format(bit_num))
+        self.bit_num = bit_num
+        self.band_num = band_num
+
+    def __call__(self, A_img, B_img, label=None):
+        B_img = func.histogram_matching(B_img, A_img, self.bit_num, self.band_num)
+        return (A_img, B_img, label)

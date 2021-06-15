@@ -155,3 +155,47 @@ def random_splicing(img, mode, band_num):
     else:
         img[:, 0:rdx, :band_num] *= alpha
     return img
+
+
+# 直方图均衡化
+def histogram_equalization(img, band_num):
+    for b in range(band_num):
+        img[:, :, b] = cv2.equalizeHist(img[:, :, b])
+    return img
+
+
+# 直方图规定化
+def histogram_matching(t2, t1, band_num, bit_num=8):
+    def_t2 = t2.copy()
+    bmax = 2 ** bit_num
+    for b in range(band_num):
+        hist1, _ = np.histogram(t1[:, :, b].ravel(), bmax, [0, bmax])
+        hist2, _ = np.histogram(t2[:, :, b].ravel(), bmax, [0, bmax])
+        # 获得累计直方图
+        cdf1 = hist1.cumsum()
+        cdf2 = hist2.cumsum()
+        # 归一化处理
+        cdf1_hist = hist1.cumsum() / cdf1.max()
+        cdf2_hist = hist2.cumsum() / cdf2.max()
+        # diff_cdf里是每2个灰度值比率间的差值
+        diff_cdf = [0] * bmax
+        for i in range(bmax):
+            for j in range(bmax):
+                diff_cdf[i][j] = abs(cdf1_hist[i] - cdf2_hist[j])
+        # 灰度级与目标灰度级的对应表
+        lut = np.zeros(bmax, dtype=np.int)
+        for i in range(bmax):
+            squ_min = diff_cdf[i][0]
+            index = 0
+            for j in range(bmax):
+                if squ_min > diff_cdf[i][j]:
+                    squ_min = diff_cdf[i][j]
+                    index = j
+            lut[i] = ([i, index])
+        h = int(t1.shape[0])
+        w = int(t2.shape[1])
+        # 对原图像进行灰度值的映射
+        for i in range(h):
+            for j in range(w):
+                def_t2[i, j, b] = lut[t1[i, j, b]][1]
+    return def_t2
