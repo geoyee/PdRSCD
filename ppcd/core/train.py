@@ -116,7 +116,8 @@ def Train(model,
                     model.eval()
                     val_losses = []
                     val_mious = []
-                    val_accs = []
+                    val_maccs = []
+                    val_mf1s = []
                     val_kappas = []
                     if isinstance(dataloader, CDataLoader):  # 这个地方待改进
                         eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
@@ -143,18 +144,21 @@ def Train(model,
                                                      dtype='int64')
                         else:
                             val_pred = (val_pred_list[0] > threshold).astype('int64')
-                        val_miou, val_class_miou, val_acc, val_class_acc, val_kappa = ComputAccuracy(
+                        val_miou, val_class_miou, val_macc, val_class_acc, val_mf1, val_class_f1, val_kappa = ComputAccuracy(
                             val_pred, val_lab[0])
                         val_mious.append(val_miou)
-                        val_accs.append(val_acc)
+                        val_maccs.append(val_macc)
+                        val_mf1s.append(val_mf1)
                         val_kappas.append(val_kappa)
-                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, acc: {:.4f}, class_acc: {}, kappa: {:.4f}" \
+                    print("[Eval] epoch: {}, loss: {:.4f}, miou: {:.4f}, class_miou: {}, acc: {:.4f}, class_acc: {}, f1: {:.4f}, class_f1: {}, kappa: {:.4f}" \
                         .format(epoch_id + 1, np.mean(val_losses), np.mean(val_mious), \
-                        str(np.round(val_class_miou, 4)), np.mean(val_accs), \
-                        str(np.round(val_class_acc, 4)), np.mean(val_kappas)))
+                        str(np.round(val_class_miou, 4)), np.mean(val_maccs), \
+                        str(np.round(val_class_acc, 4)), np.mean(val_mf1s), \
+                        str(np.round(val_class_f1, 4)), np.mean(val_kappas)))
                     writer.add_scalar(tag="eval/loss", step=iters, value=np.mean(val_losses))
-                    writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_accs))
+                    writer.add_scalar(tag="eval/acc", step=iters, value=np.mean(val_maccs))
                     writer.add_scalar(tag="eval/miou", step=iters, value=np.mean(val_mious))
+                    writer.add_scalar(tag="eval/f1", step=iters, value=np.mean(val_mf1s))
                     writer.add_scalar(tag="eval/kappa", step=iters, value=np.mean(val_kappas))
                     paddle.save(model.state_dict(), os.path.join(save_model_path, 'epoch_' + \
                                 str(epoch_id)) + '.pdparams')

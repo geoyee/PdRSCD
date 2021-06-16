@@ -100,6 +100,32 @@ def get_accuracy(intersect_area, pred_area):
     return np.array(class_acc), macc
 
 
+def get_f1(intersect_area, label_area, class_acc):
+    """
+    Calculate f1
+    Args:
+        intersect_area (Tensor): The intersection area of prediction and ground truth on all classes.
+        pred_area (Tensor): The prediction area on all classes.
+    Returns:
+        np.ndarray: f1 on all classes.
+        float: mean f1.
+    """
+    intersect_area = intersect_area.numpy()
+    label_area = label_area.numpy()
+    precision_cls = class_acc
+    recall_cls = []
+    for i in range(len(intersect_area)):
+        if label_area[i] == 0:
+            recall = 0
+        else:
+            recall = intersect_area[i] / label_area[i]
+        recall_cls.append(recall)
+    recall_cls = np.array(recall_cls)
+    f1_cls = (2 * precision_cls * recall_cls) / (precision_cls + recall_cls)
+    mf1 = np.nanmean(f1_cls)
+    return f1_cls, mf1
+
+
 def get_kappa(intersect_area, pred_area, label_area):
     """
     Calculate kappa coefficient
@@ -126,6 +152,7 @@ def ComputAccuracy(preds, labs, num_classes=2, ignore_index=255):
     labs = labs.astype('int32')
     intersect_area, pred_area, label_area = calculate_area(preds, labs, num_classes, ignore_index)
     class_iou, miou = get_mean_iou(intersect_area, pred_area, label_area)
-    class_acc, acc = get_accuracy(intersect_area, pred_area)
+    class_acc, macc = get_accuracy(intersect_area, pred_area)
+    class_f1, mf1 = get_f1(intersect_area, label_area, class_acc)
     kappa = get_kappa(intersect_area, pred_area, label_area)
-    return miou, class_iou, acc, class_acc, kappa
+    return miou, class_iou, macc, class_acc, mf1, class_f1, kappa
