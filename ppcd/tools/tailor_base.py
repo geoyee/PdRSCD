@@ -71,7 +71,7 @@ def slide_out(bimgs, row, col, index, c_size=None):
 
 def split_eval(bimgs, rate=0.8, direction='H', geoinfo=None):
     '''
-        将图像划分为两个部分，训练集和测试集
+        将图像划分为两个部分，训练集和测试集（默认第一个返回的是训练集，位置在左或上）
     '''
     if rate <=0 or rate >= 1:
         raise ValueError('the value of rate must be between 0 and 1!')
@@ -100,10 +100,14 @@ def split_eval(bimgs, rate=0.8, direction='H', geoinfo=None):
     if geoinfo is None:
         return train_imgs, val_imgs
     else:
+        train_geoinfo = geoinfo.copy()
+        train_geoinfo['xsize'] = train_imgs[0].shape[1]
+        train_geoinfo['ysize'] = train_imgs[0].shape[0]
+        # 左上角位置不变
         val_geoinfo = geoinfo.copy()
         val_geoinfo['xsize'] = val_imgs[0].shape[1]
         val_geoinfo['ysize'] = val_imgs[0].shape[0]
         val_geoinfo['geotrans'] = (
             minx + int(W * rate * xres), xres, xskew, maxy, yskew, yres) if direction == 'V' \
             else (minx, xres, xskew, maxy + int(H * rate * yres), yskew, yres)
-        return train_imgs, val_imgs, val_geoinfo
+        return train_imgs, val_imgs, train_geoinfo, val_geoinfo
