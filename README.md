@@ -49,7 +49,8 @@ ppcd
 ```python
 # 克隆项目（终端操作）
 # ! git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
-! git clone https://gitee.com/Geoyee/pd-rscd.git
+# ! git clone https://gitee.com/Geoyee/pd-rscd.git
+! git clone --depth=1 https://gitee.com/Geoyee/pd-rscd.git  # 只是使用这样克隆可以更加快速
     
 import sys
 sys.path.append('pd-rscd')  # 加载环境变量
