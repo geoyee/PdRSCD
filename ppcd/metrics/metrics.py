@@ -93,6 +93,7 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
     eps = 1e-12
     intersect_area = intersect_area.numpy()
     pred_area = pred_area.numpy()
+    label_area = label_area.numpy()
     class_acc = []
     class_rcl = []
     for i in range(len(intersect_area)):
@@ -104,7 +105,7 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
             recall = intersect_area[i] / label_area[i]
         class_acc.append(acc)
         class_rcl.append(recall)
-    macc = np.sum(intersect_area) / np.sum(pred_area)
+    macc = np.sum(intersect_area) / (np.sum(pred_area) + eps)
     class_acc = np.array(class_acc)
     class_rcl = np.array(class_rcl)
     f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl + eps)
