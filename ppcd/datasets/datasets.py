@@ -220,8 +220,8 @@ class Dataset(object):
     def __init__(self, big_map=False):  # big_map为True的话就是对应大图预测
         self.data_mode = CDataset if big_map == False else BDataset
 
-    def __call__(self, *args):
-        return self.data_mode(*args)
+    def __call__(self, *args, **kwargs):
+        return self.data_mode(*args, **kwargs)
 
 
 # 数据读取器
