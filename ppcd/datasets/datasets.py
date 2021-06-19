@@ -77,7 +77,7 @@ def split_create_list_class(dataset_path, split_rate=[8, 1, 1], shuffle=True):
 
 class CDataset(Dataset):
     def __init__(self, data_list_path, data_format='HWC', separator=' ', \
-                 transforms=None, classes_num=2, labels_num=1, is_infer=False, shuffle=False):
+                 transforms=None, classes_num=2, is_infer=False, shuffle=False):
         '''
         说明：
             data_format针对的是npy和npz的数据，因为TIF读取默认为CHW会自动转为HWC，JPG/PNG的读取默认就是HWC
@@ -86,7 +86,7 @@ class CDataset(Dataset):
                                   data_format=data_format, classes_num=classes_num)
         self.datas = []
         self.is_infer = is_infer
-        self.labels_num = labels_num
+        self.classes_num = classes_num
         with open(data_list_path, 'r') as f:
             fdatas = f.readlines()
         for fdata in fdatas:
@@ -94,10 +94,8 @@ class CDataset(Dataset):
             if is_infer:
                 self.datas.append([fdata[0], fdata[1].strip()])
             else:
-                if labels_num == 1:
-                    self.datas.append([fdata[0], fdata[1], [fdata[2].strip()]])
-                else:
-                    self.datas.append([fdata[0], fdata[1], fdata[2].strip().split('?')])
+                # 如果是多标签，标签间用?隔开
+                self.datas.append([fdata[0], fdata[1], fdata[2].strip().split('?')])
         self.lens = len(self.datas)
         if shuffle == True:
             random.shuffle(self.datas)
@@ -106,7 +104,7 @@ class CDataset(Dataset):
         random.shuffle(self.datas)
 
     def __getitem__(self, index):
-        if self.labels_num == 1:
+        if self.classes_num == 1:
             if self.is_infer:
                 A_path, B_path = self.datas[index]
             else:
@@ -122,7 +120,7 @@ class CDataset(Dataset):
         A_img = A_img.transpose((2, 0, 1))
         B_img = B_img.transpose((2, 0, 1))
         name, _ = os.path.splitext(os.path.split(A_path)[1])
-        if self.labels_num == 1:
+        if self.classes_num == 1:
             if self.is_infer:
                 return A_img, B_img, name
             else:
