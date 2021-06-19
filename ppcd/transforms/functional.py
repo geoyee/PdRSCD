@@ -8,7 +8,7 @@ from PIL import Image
 
 
 # 根据图像类型读取图像
-def read_img(img_path, npd_shape, is_lab, is_255=True):
+def read_img(img_path, data_format, is_lab, classes_num=2):
     img_format = imghdr.what(img_path)
     _, ext = os.path.splitext(img_path)
     ipt_gdal = False
@@ -19,19 +19,19 @@ def read_img(img_path, npd_shape, is_lab, is_255=True):
         if img_format == 'tiff' or ext == '.img':
             if ipt_gdal == True:
                 img_data = gdal.Open(img_path).ReadAsArray()
-                return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是[c, h, w]
+                return img_data.transpose((1, 2, 0)).astype('float32')  # 多波段图像默认是CHW
             else:
                 raise Exception('Unable to open TIF/IMG image without GDAL!')
         elif ext == '.npy' or ext == '.npz':
             npy_data = np.load(img_path)
-            if npd_shape == "HWC":
+            if data_format == "HWC":
                 return npy_data.astype('float32')
             else:
                 return npy_data.transpose((1, 2, 0)).astype('float32')
-        elif img_format == 'jpeg' or img_format == 'png':
+        elif img_format == 'jpeg' or img_format == 'png' or img_format == 'bmp':
             if is_lab:
                 jp_data = np.asarray(Image.open(img_path))
-                if is_255:
+                if classes_num == 2:
                     jp_data = jp_data.clip(max=1)
             else:
                 jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)

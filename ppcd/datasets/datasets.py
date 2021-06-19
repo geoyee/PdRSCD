@@ -76,13 +76,17 @@ def split_create_list_class(dataset_path, split_rate=[8, 1, 1], shuffle=True):
 
 
 class CDataset(Dataset):
-    def __init__(self, data_list_path, transforms=None, separator=' ', is_infer=False, \
-                 shuffle=False, labels_num=1, npd_shape='HWC', is_255=True, is_class=False):
-        self.transforms = Compose(transforms=transforms, npd_shape=npd_shape, is_255=is_255)
+    def __init__(self, data_list_path, data_format='HWC', separator=' ', \
+                 transforms=None, classes_num=2, labels_num=1, is_infer=False, shuffle=False):
+        '''
+        说明：
+            data_format针对的是npy和npz的数据，因为TIF读取默认为CHW会自动转为HWC，JPG/PNG的读取默认就是HWC
+        '''
+        self.transforms = Compose(transforms=transforms, \
+                                  data_format=data_format, classes_num=classes_num)
         self.datas = []
         self.is_infer = is_infer
-        self.is_class = is_class
-        self.labels_num = labels_num if is_class == False else 1
+        self.labels_num = labels_num
         with open(data_list_path, 'r') as f:
             fdatas = f.readlines()
         for fdata in fdatas:
@@ -102,7 +106,7 @@ class CDataset(Dataset):
         random.shuffle(self.datas)
 
     def __getitem__(self, index):
-        if self.is_class:
+        if self.labels_num == 1:
             if self.is_infer:
                 A_path, B_path = self.datas[index]
             else:
@@ -118,7 +122,7 @@ class CDataset(Dataset):
         A_img = A_img.transpose((2, 0, 1))
         B_img = B_img.transpose((2, 0, 1))
         name, _ = os.path.splitext(os.path.split(A_path)[1])
-        if self.is_class:
+        if self.labels_num == 1:
             if self.is_infer:
                 return A_img, B_img, name
             else:
@@ -135,55 +139,15 @@ class CDataset(Dataset):
         return self.lens
 
 
-class CDataLoader(object):
-    def __init__(self, cdataset, batch_size, shuffle=False, is_val=False):
-        self.cdataset = cdataset
-        if shuffle:
-            self.cdataset.refresh_data()
-        self.batch_size = batch_size
-        self.is_val = is_val
-        if self.is_val:
-            self.index = iter(range(ceil(len(self.cdataset) / self.batch_size)))
-        else:
-            self.index = iter(range(len(self.cdataset) // self.batch_size))
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        try:
-            index = next(self.index)
-            t1s = []
-            t2s = []
-            ques = []
-            start = index * self.batch_size
-            end = (index + 1) * self.batch_size
-            if end > len(self.cdataset):
-                end = len(self.cdataset)
-            for i in range(start, end, 1):
-                t1, t2, que = self.cdataset[i]
-                t1s.append(t1)
-                t2s.append(t2)
-                ques.append(que)
-            if isinstance(ques[0], list):
-                tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
-                ques = [paddle.to_tensor(tmp[i, :, : ,:, :]) for i in range(tmp.shape[0])]
-            else:
-                if not isinstance(ques[0], str):
-                    ques = paddle.to_tensor(ques)
-            return (paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques)
-        except StopIteration:
-            pass
-
-
 # 大范围的遥感数据
 class BDataset(Dataset):
     def __init__(self, t1_source, t2_source, lab_source=None, c_size=[512, 512], \
-                 transforms=None, out_mode='random', is_255=True, is_tif=True, geoinfo=None):
+                 transforms=None, classes_num=2, out_mode='random', is_tif=True, geoinfo=None):
         '''
             t1、t2以及lab (str/ndarray)
         '''
-        self.transforms = Compose(transforms=transforms, is_255=is_255)
+        self.classes_num = classes_num
+        self.transforms = Compose(transforms=transforms, classes_num=classes_num)
         if isinstance(t1_source, str) and isinstance(t2_source, str):
             if is_tif == False:
                 self.t1 = np.asarray(Image.open(t1_source))
@@ -249,3 +213,54 @@ class BDataset(Dataset):
 
     def __len__(self):
         return self.lens
+
+
+# 数据集
+class Dataset(object):
+    def __init__(self, big_map=False):  # big_map为True的话就是对应大图预测
+        self.data_mode = CDataset if big_map == False else BDataset
+
+    def __call__(self, *args):
+        return self.data_mode(*args)
+
+
+# 数据读取器
+class DataLoader(object):
+    def __init__(self, cdataset, batch_size, shuffle=False, is_val=False):
+        self.cdataset = cdataset
+        if shuffle:
+            self.cdataset.refresh_data()
+        self.batch_size = batch_size
+        self.is_val = is_val
+        if self.is_val:
+            self.index = iter(range(ceil(len(self.cdataset) / self.batch_size)))
+        else:
+            self.index = iter(range(len(self.cdataset) // self.batch_size))
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            index = next(self.index)
+            t1s = []
+            t2s = []
+            ques = []
+            start = index * self.batch_size
+            end = (index + 1) * self.batch_size
+            if end > len(self.cdataset):
+                end = len(self.cdataset)
+            for i in range(start, end, 1):
+                t1, t2, que = self.cdataset[i]
+                t1s.append(t1)
+                t2s.append(t2)
+                ques.append(que)
+            if isinstance(ques[0], list):
+                tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
+                ques = [paddle.to_tensor(tmp[i, :, : ,:, :]) for i in range(tmp.shape[0])]
+            else:
+                if not isinstance(ques[0], str):
+                    ques = paddle.to_tensor(ques)
+            return (paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques)
+        except StopIteration:
+            pass

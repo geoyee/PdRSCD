@@ -1,8 +1,8 @@
 import os
 import numpy as np
 import paddle
-from paddle.io import DataLoader
-from ppcd.datasets import CDataLoader
+# from paddle.io import DataLoader
+from ppcd.datasets import DataLoader
 from ppcd.metrics import ComputAccuracy
 from ppcd.utils import TimeAverager, calculate_eta
 from visualdl import LogWriter
@@ -63,9 +63,9 @@ def Train(model,
           save_model_path=None,
           save_epoch=2,
           log_batch=10,
-          threshold=0.5,
-          loader='CDataLoader'):  # loader内部测试
-    dataloader = CDataLoader if loader == 'CDataLoader' else DataLoader
+          threshold=0.5):
+    # dataloader = CDataLoader if loader == 'CDataLoader' else DataLoader
+    dataloader = DataLoader
     data_lens = len(train_data) // batch_size  # 训练数据数
     # 创建模型保存文件夹
     if save_model_path is not None:
@@ -119,10 +119,11 @@ def Train(model,
                     val_maccs = []
                     val_mf1s = []
                     val_kappas = []
-                    if isinstance(dataloader, CDataLoader):  # 这个地方待改进
-                        eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
-                    else:
-                        eval_loader = dataloader(eval_data, batch_size=batch_size)
+                    # if isinstance(dataloader, CDataLoader):  # 这个地方待改进
+                    #     eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
+                    # else:
+                    #     eval_loader = dataloader(eval_data, batch_size=batch_size)
+                    eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
                     for val_load_data in eval_loader:
                         if val_load_data is None:
                             break

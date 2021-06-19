@@ -1,1 +1,1 @@
-from .datasets import CDataset, BDataset, CDataLoader, create_list, split_create_list_class
+from .datasets import Dataset, DataLoader, create_list, split_create_list_class

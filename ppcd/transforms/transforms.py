@@ -16,15 +16,15 @@ class Compose:
     所有操作的输入图像流形状均是 [H, W, C]，其中H为图像高，W为图像宽，C为图像通道数
     Args:
         transforms (list/None): 数据增强算子，默认为None
-        npd_shape ("HWC"/"CHW"): 如果数据是npy/npz格式，数据形状如何，默认为"HWC"
-        is_255 (bool): 标签是否为0-255图像，默认为True
+        data_format ("HWC"/"CHW"): 如果数据是npy/npz格式，数据形状如何，默认为"HWC"
+        classes_num (int): 标签有多少类，默认为2（单一的变化检测）
     """
-    def __init__(self, transforms=None, npd_shape="HWC", is_255=True):
-        if npd_shape != "HWC" and npd_shape != "CHW":
-            raise ValueError('The npd_shape must be "HWC" or "CHW"!')
+    def __init__(self, transforms=None, data_format="HWC", classes_num=2):
+        if data_format != "HWC" and data_format != "CHW":
+            raise ValueError('The data_format must be "HWC" or "CHW"!')
         self.transforms = transforms
-        self.npd_shape = npd_shape
-        self.is_255 = is_255
+        self.data_format = data_format
+        self.classes_num = classes_num
 
     def __call__(self, A_img, B_img, lab=None):
         """
@@ -35,12 +35,13 @@ class Compose:
             当为ndarray时，就是大图像处理的时候
         """
         if isinstance(A_img, str) and isinstance(B_img, str):
-            A_img = func.read_img(A_img, self.npd_shape, is_lab=False)
-            B_img = func.read_img(B_img, self.npd_shape, is_lab=False)
+            A_img = func.read_img(A_img, self.data_format, is_lab=False)
+            B_img = func.read_img(B_img, self.data_format, is_lab=False)
             if lab is not None:
                 labs = []
                 for lab_pth in lab:
-                    labs.append(func.read_img(lab_pth, self.npd_shape, is_lab=True, is_255=self.is_255))
+                    labs.append(func.read_img(lab_pth, self.data_format, \
+                                              is_lab=True, classes_num=self.classes_num))
             else:
                 labs = None
         else:  # 如果进来的直接就是图像就不用再读取一次了
