@@ -105,9 +105,11 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
         class_acc.append(acc)
         class_rcl.append(recall)
     macc = np.sum(intersect_area) / np.sum(pred_area)
+    class_acc = np.array(class_acc)
+    class_rcl = np.array(class_rcl)
     f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl + eps)
     mf1 = np.nanmean(f1_cls)
-    return np.array(class_acc), macc, f1_cls, mf1
+    return class_acc, macc, f1_cls, mf1
 
 
 def get_kappa(intersect_area, pred_area, label_area):
