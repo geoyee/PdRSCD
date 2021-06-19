@@ -53,7 +53,7 @@ def Slide_Infer(model,
     if infer_data.is_tif == True:
         geoinfo = infer_data.geoinfo
     # 数据读取器
-    infer_loader = DataLoader(infer_data, batch_size=1)
+    infer_loader = paddle.io.DataLoader(infer_data, batch_size=1)  # TODO:如何统一
     # 开始预测
     if save_img_path is not None:
         if os.path.exists(save_img_path) == False:
@@ -63,7 +63,7 @@ def Slide_Infer(model,
     model.set_dict(para_state_dict)
     lens = len(infer_data)
     inf_imgs = []  # 保存块
-    # for idx, infer_load_data in qenumerate(infer_loader):\
+    # for idx, infer_load_data in qenumerate(infer_loader):
     for infer_load_data in tqdm(infer_loader):
         if infer_load_data is None:
             break
