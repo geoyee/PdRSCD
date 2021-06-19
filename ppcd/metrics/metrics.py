@@ -99,9 +99,11 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
     for i in range(len(intersect_area)):
         if pred_area[i] == 0:
             acc = 0
-            recall = 0
         else:
             acc = intersect_area[i] / pred_area[i]
+        if label_area[i] == 0:
+            recall = 0
+        else:
             recall = intersect_area[i] / label_area[i]
         class_acc.append(acc)
         class_rcl.append(recall)
