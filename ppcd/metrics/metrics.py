@@ -90,7 +90,6 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
         np.ndarray: recall on all classes.
         float: mean recall.
     """
-    eps = 1e-12
     intersect_area = intersect_area.numpy()
     pred_area = pred_area.numpy()
     label_area = label_area.numpy()
@@ -107,11 +106,11 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
             recall = intersect_area[i] / label_area[i]
         class_acc.append(acc)
         class_rcl.append(recall)
-    macc = np.sum(intersect_area) / (np.sum(pred_area) + eps)
+    macc = np.sum(intersect_area) / np.sum(pred_area)
     class_acc = np.array(class_acc)
     class_rcl = np.array(class_rcl)
-    f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl + eps)
-    mf1 = np.nanmean(f1_cls)
+    f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl)
+    mf1 = np.mean(f1_cls)
     return class_acc, macc, f1_cls, mf1
 
 
