@@ -23,6 +23,8 @@ def calculate_area(pred, label, num_classes, ignore_index=255):
     if not pred.shape == label.shape:
         raise ValueError('Shape of `pred` and `label should be equal, '
                          'but there are {} and {}.'.format(pred.shape, label.shape))
+    # print(set(pred.numpy().flatten()))
+    # print(set(label.numpy().flatten()))
     # Delete ignore_index
     mask = label != ignore_index
     pred = pred + 1
@@ -109,7 +111,7 @@ def get_accuracy_f1(intersect_area, pred_area, label_area):
     macc = np.sum(intersect_area) / np.sum(pred_area)
     class_acc = np.array(class_acc)
     class_rcl = np.array(class_rcl)
-    f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl)
+    f1_cls = (2 * class_acc * class_rcl) / (class_acc + class_rcl + 1e-12)
     mf1 = np.mean(f1_cls)
     return class_acc, macc, f1_cls, mf1
 
