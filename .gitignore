@@ -24,5 +24,7 @@ output_infer
 log
 *.log
 
+# pypi
 dist
 ppcd.egg-info
+build
