@@ -15,7 +15,9 @@ test_img
 
 test.py
 
+output_model
 *.pdparams
+*.pdopt
 
 output_infer
 
