@@ -23,3 +23,6 @@ output_infer
 
 log
 *.log
+
+dist
+ppcd.egg-info
