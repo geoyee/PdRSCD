@@ -45,13 +45,19 @@ ppcd
 
 ## 使用入门
 
-1. 因为目前没有程序包，所以需要首先克隆到项目中，并添加到环境变量。
+1. 可以通过pip进行安装，但是由于GDAL无法直接通过pip安装，所以需要使用GDAL的地方目前需要自行安装GDAL。
+
+```
+! pip install ppcd==0.1.2
+```
+
+也可以通过克隆PdRSCD到项目中，并添加到环境变量。
 
 ```python
 # 克隆项目（终端操作）
 # ! git clone https://github.com/geoyee/PdRSCD.git  # github可能较慢
 # ! git clone https://gitee.com/Geoyee/pd-rscd.git
-! git clone --depth=1 https://gitee.com/Geoyee/pd-rscd.git  # 只是使用这样克隆可以更加快速
+! git clone --depth=1 https://gitee.com/Geoyee/pd-rscd.git  # 如果只是使用这样克隆可以更加快速
     
 import sys
 sys.path.append('pd-rscd')  # 加载环境变量
