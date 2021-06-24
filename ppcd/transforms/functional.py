@@ -66,10 +66,12 @@ def mode_flip(img, mode):
 
 # 旋转图像
 def rotate_img(img, ang, ig_pix=None):
+    img = img.astype('float32')
     height, width = img.shape[:2]
     matRotate = cv2.getRotationMatrix2D((width * 0.5, height * 0.5), ang, 1)
     if ig_pix is not None:
         ig_pix = [ig_pix]
+    # print(img)
     img = cv2.warpAffine(img, matRotate, (width, height), flags=cv2.INTER_NEAREST, borderValue=ig_pix)
     if img.shape == 2:
         img = img.reshape(height, width, 1)

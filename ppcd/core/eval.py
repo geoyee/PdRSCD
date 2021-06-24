@@ -7,14 +7,15 @@ from ppcd.utils import loss_computation
 from tqdm import tqdm
 
 
-def Eval(model,
+def Eval(model,    
          eval_data,
+         batch_size=1,
          losses=None,
          threshold=0.5,
          ignore_index=255,
          show_result=True):
     dataloader = DataLoader
-    data_lens = len(eval_data)
+    # data_lens = len(eval_data)
     model.eval()
     val_losses = []
     val_mious = []
@@ -28,7 +29,8 @@ def Eval(model,
     #     eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
     # else:
     #     eval_loader = dataloader(eval_data, batch_size=batch_size)
-    eval_loader = dataloader(eval_data, batch_size=1, is_val=True)
+    eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
+    val_i = 0
     for val_load_data in tqdm(eval_loader):
         if val_load_data is None:
             break
@@ -59,10 +61,11 @@ def Eval(model,
         val_class_mious += val_class_miou
         val_class_accs += val_class_acc
         val_class_f1s += val_class_f1
+        val_i += 1
         # print(val_class_mious, val_class_accs, val_class_f1s)
-        vcm = val_class_mious / data_lens
-        vca = val_class_accs / data_lens
-        vcf = val_class_f1s / data_lens
+    vcm = val_class_mious / val_i
+    vca = val_class_accs / val_i
+    vcf = val_class_f1s / val_i
     if show_result:
         print("[Eval] loss: {:.4f}, miou: {:.4f}, class_miou: {}, acc: {:.4f}, class_acc: {}, f1: {:.4f}, class_f1: {}, kappa: {:.4f}" \
                 .format(np.mean(val_losses), np.mean(val_mious), \
