@@ -1,6 +1,6 @@
 # PdRSCD
 
-[![Python 3.6](https://img.shields.io/badge/python-3.7+-yellow.svg)](https://www.python.org/downloads/release/python-370/) [![Paddle 2.1.0](https://img.shields.io/badge/Paddle-2.1.0-red.svg)](https://www.python.org/downloads/release/python-370/) [![License](https://img.shields.io/badge/license-Apache%202-orange.svg)](LICENSE) ![GitHub Repo stars](https://img.shields.io/github/stars/geoyee/PdRSCD)
+[![Python 3.6](https://img.shields.io/badge/python-3.7+-yellow.svg)](https://www.python.org/downloads/release/python-370/) [![Paddle 2.1.0](https://img.shields.io/badge/Paddle-2.1.0-red.svg)](https://www.python.org/downloads/release/python-370/) [![License](https://img.shields.io/badge/license-Apache%202-orange.svg)](LICENSE) ![GitHub Repo stars](https://img.shields.io/github/stars/geoyee/PdRSCD) [![star](https://gitee.com/Geoyee/pd-rscd/badge/star.svg?theme=gray)](https://gitee.com/Geoyee/pd-rscd/stargazers)
 
 PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨PaddlePaddle，仿造PaddleSeg制作的一个用于遥感变化检测的工具。其中主要的区别在于数据读取器和数据增强可以接收和同时处理两期多通道影像。可以基于此使用工具中自带的网络或搭建自己的网络快速进行变化检测任务的训练和预测。
 
