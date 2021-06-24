@@ -1,6 +1,9 @@
 import numpy as np
 try:
-    import gdal
+    try:
+        from osgeo import gdal
+    except ImportError:
+        import gdal
     IPT_GDAL = True
 except:
     IPT_GDAL = False

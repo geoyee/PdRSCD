@@ -9,4 +9,4 @@ tqdm
 filelock
 scipy
 prettytable
-gdal
+GDAL

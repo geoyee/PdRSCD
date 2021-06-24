@@ -13,7 +13,10 @@ def read_img(img_path, data_format, is_lab, classes_num=2):
     _, ext = os.path.splitext(img_path)
     ipt_gdal = False
     try:
-        import gdal
+        try:
+            from osgeo import gdal
+        except ImportError:
+            import gdal
         ipt_gdal = True
     finally:
         if img_format == 'tiff' or ext == '.img':
