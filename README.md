@@ -7,10 +7,11 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 ## 在线项目实例
 
 1. [【ppcd快速入门】经典LEVIR数据集变化检测](https://aistudio.baidu.com/aistudio/projectdetail/2117261)
-2. [【ppcd快速入门】大图滑框变化检测与拼接]()
+2. [【ppcd快速入门】大图滑框变化检测与拼接](https://aistudio.baidu.com/aistudio/projectdetail/2121793)
 3. [【ppcd快速入门】多光谱遥感影像变化检测（待更）]()
 4. [【ppcd快速入门】多标签遥感图像变化检测（待更）]()
 5. [【ppcd快速入门】分类标签遥感变化检测（待更）]()
+6. [【ppcd快速入门】在想（待更）]()
 
 ## 特点
 
@@ -49,10 +50,10 @@ ppcd
 
 ## 使用入门
 
-- 可以通过pip使用官方原直接进行安装，目前版本0.1.3。
+- 可以通过pip使用官方原直接进行安装。
 
 ```shell
-pip install ppcd==0.1.3 -i https://pypi.org/simple
+pip install ppcd -i https://pypi.org/simple
 ```
 
 - 也可以通过克隆PdRSCD到项目中，并添加到环境变量。

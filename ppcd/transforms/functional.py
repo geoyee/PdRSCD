@@ -46,10 +46,11 @@ def read_img(img_path, data_format, is_lab, classes_num=2):
 # 标准化
 def normalize(img, min_value, max_value, mean, std, band_num):
     range_value = [max_value[i] - min_value[i] for i in range(band_num)]
-    img[:, :, :band_num] = (img[:, :, :band_num].astype(np.float32, copy=False) - min_value) / range_value
-    img[:, :, :band_num] -= mean
-    img[:, :, :band_num] /= std
-    return img
+    cimg = img.copy().astype(np.float32)
+    cimg[:, :, :band_num] = (img[:, :, :band_num].astype(np.float32, copy=False) - min_value) / range_value
+    cimg[:, :, :band_num] -= mean
+    cimg[:, :, :band_num] /= std
+    return cimg
 
 
 # 图像翻转
