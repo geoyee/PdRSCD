@@ -9,14 +9,19 @@ long_description = "PdRSCD（PaddlePaddle Remote Sensing Change Detection）\
 
 with open("requirements.txt", "r") as fr:
     requires = fr.readlines()
-for i in range(len(requires)):
+i = 0
+while i < len(requires):
     requires[i] = requires[i].strip()
-    if requires[i] == 'GDAL':  # GDAL无法通过pip安转
+    if requires[i][0] == '#':
         del requires[i]
+    else:
+        i += 1
+
+print(requires)
 
 setuptools.setup(
     name="ppcd",
-    version="0.1.2",
+    version="0.1.3",
     author="geoyee",
     author_email="geoyee@yeah.net",
     description="SDK about pdrscd",
