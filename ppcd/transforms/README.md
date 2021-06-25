@@ -1,6 +1,8 @@
-## 现有资产
+# 数据增强与自定义数据增强
 
-### 1. 数据增强
+## 一、数据增强
+
+### 1.1 通用数据增强
 
 数据增强适配了遥感图像多通道的特点，并结合了一些专门的增强方法，相关代码可以去往ppcd.transforms.transforms下查看和修改。其中使用参数均在代码中有所说明。
 
@@ -29,11 +31,26 @@
 
 ### 2. RGB图像预处理
 
-对一些RGB图像，有一些预处理方法可能会取得一定的效果，相关代码可以去往ppcd.transforms.enhance下查看和修改。
+对一些RGB图像，有一些预处理方法可能会取得一定的效果，相关代码可以去往ppcd.transforms.enhance下查看和修改。目前这一块还未进行使用的定义。
 
 | 预处理方法          | 说明           |
 | ------------------- | -------------- |
 | percent_linear      | 线性拉伸       |
 | bilateral_filtering | 双边滤波       |
 | de_haze             | 暗通道先验去雾 |
+
+## 二、自定义损失函数
+
+同可以参考[PaddleSeg的自定义损失](https://github.com/PaddlePaddle/PaddleSeg/blob/release/2.1/docs/design/create/add_new_model.md)，在ppcd中形式如下：
+
+```python
+import paddle.nn as nn
+
+class NewTrans(nn.Layer):
+    def __init__(self, param1):
+        pass
+    
+    def __call__(self, self, A_img, B_img, label=None):
+        return (A_img, B_img, label)
+```
 

@@ -46,7 +46,8 @@ ppcd
 2. [模型库与自定义模型](ppcd/models/README.md)
 3. [损失函数与自定义损失函数](ppcd/losses/README.md)
 4. [数据增强与自定义数据增强](ppcd/transforms/README.md)
-5. [传统处理与自定义传统处理](ppcd/traditions/README.md)
+5. [传统处理方法](ppcd/traditions/README.md)
+6. [工具组](ppcd/tools/README.md)
 
 ## 使用入门
 
@@ -74,13 +75,14 @@ sys.path.append('pd-rscd')  # 加载环境变量
 
 ## 后续重点
 
-1. 支持$N(N>=1)$张输入数据，将分割、多期变化检测与多源数据任务结合。
+1. 支持$N(N\ge1)$张输入数据，将分割、多期变化检测与多源数据任务结合。
 2. 支持ArcGIS shp的输入输出。
 
-## Git链接
+## 相关链接
 
-- github：https://github.com/geoyee/PdRSCD.git
-- gitee：https://gitee.com/Geoyee/pd-rscd.git
+- github：[https://github.com/geoyee/PdRSCD](https://github.com/geoyee/PdRSCD)
+- gitee：[https://gitee.com/Geoyee/pd-rscd](https://gitee.com/Geoyee/pd-rscd)
+- pypi：[https://pypi.org/project/ppcd/](https://pypi.org/project/ppcd/)
 
 ## 交流与反馈
 
