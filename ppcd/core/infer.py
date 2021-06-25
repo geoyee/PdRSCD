@@ -72,12 +72,15 @@ def Slide_Infer(model,
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]
-        if num_class != 1:
+        if num_class == 2:
             inf_imgs.append((paddle.argmax(pred_list[0], axis=1). \
                             squeeze().numpy() * 255).astype('uint8'))
-        else:
+        elif num_class == 1:
             inf_imgs.append(((pred_list[0] > threshold).numpy(). \
                              astype('uint8') * 255).reshape([H, W]))
+        else:
+            inf_imgs.append((paddle.argmax(pred_list[0], axis=1). \
+                            squeeze().numpy()).astype('uint8'))
         # print('[Infer] ' + str(idx + 1) + '/' + str(lens))
     fix_img = splicing_list(inf_imgs, raw_size)  # 拼接
     if is_tif == True:

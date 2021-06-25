@@ -22,9 +22,9 @@ def Eval(model,
     val_maccs = []
     val_mf1s = []
     val_kappas = []
-    val_class_mious = np.array([0, 0]).astype('float64')
-    val_class_accs = np.array([0, 0]).astype('float64')
-    val_class_f1s = np.array([0, 0]).astype('float64')
+    val_class_mious = 0.
+    val_class_accs = 0.
+    val_class_f1s = 0.
     # if isinstance(dataloader, CDataLoader):  # 这个地方待改进
     #     eval_loader = dataloader(eval_data, batch_size=batch_size, is_val=True)
     # else:
