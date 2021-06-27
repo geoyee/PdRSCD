@@ -95,7 +95,7 @@ class CDataset(Dataset):
             fdata = fdata.split(separator)
             fdata[-1] = fdata[-1].strip()
             if is_infer:
-                self.datas.append(fdata)
+                self.datas.append(fdata[:-1])
             else:
                 # 如果是多标签，标签间用?隔开
                 self.datas.append([fdata[:-1], fdata[-1].split('?')])
@@ -120,6 +120,9 @@ class CDataset(Dataset):
             else:
                 img_path, labs_path = self.datas[index]
                 imgs, labs = self.transforms(img_path, labs_path)
+        # TODO：为什么出现
+        if isinstance(imgs, tuple):
+            imgs = imgs[0]
         for i in range(len(imgs)):
             imgs[i] = imgs[i].transpose((2, 0, 1))
         name, _ = os.path.splitext(os.path.split(img_path[0])[1])
