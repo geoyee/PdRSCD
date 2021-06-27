@@ -240,6 +240,7 @@ class DataLoader(object):
             self.index = iter(range(ceil(len(self.cdataset) / self.batch_size)))
         else:
             self.index = iter(range(len(self.cdataset) // self.batch_size))
+        self.num_image = len(self.cdataset[0][0])
 
     def __iter__(self):
         return self
@@ -247,7 +248,7 @@ class DataLoader(object):
     def __next__(self):
         try:
             index = next(self.index)
-            ts = []
+            ts = [None] * self.num_image
             ques = []
             start = index * self.batch_size
             end = (index + 1) * self.batch_size
@@ -259,7 +260,7 @@ class DataLoader(object):
                     try:
                         ts[j].append(timgs[j])
                     except:
-                        ts[j] = timgs[j]
+                        ts[j] = [timgs[j]]
                 ques.append(que)
             if isinstance(ques[0], list):
                 tmp = np.array(ques).transpose((1, 0, 2, 3, 4))

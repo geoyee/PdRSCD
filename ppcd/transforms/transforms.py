@@ -90,17 +90,16 @@ class Resize:
             size = (self.target_size, self.target_size)
         else:
             size = self.target_size
-        images = []
         for i in range(len(image)):
             if not isinstance(image[i], np.ndarray):
                 raise TypeError("ResizeImage: image type is not np.ndarray.")
             if len(image[i].shape) != 3:
                 raise ValueError('ResizeImage: image is not 3-dimensional.')
-            images.append(cv2.resize(image[i], size, interpolation=self.interp_dict[self.interp]))
+            image[i] = cv2.resize(image[i], size, interpolation=self.interp_dict[self.interp])
         if label is not None:
             label = [cv2.resize(lab, size, interpolation=self.interp_dict['NEAREST']) \
                      for lab in label]
-        return images, label
+        return image, label
             
 
 class Normalize:
@@ -162,7 +161,9 @@ class RandomFlip:
                 images.append(func.mode_flip(image[i], self.direction))
             if label is not None:
                 label = [func.mode_flip(lab, self.direction) for lab in label]
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomRotate:
@@ -186,7 +187,9 @@ class RandomRotate:
                 images.append(func.rotate_img(image[i], ang))
             if label is not None:
                 label = [func.rotate_img(lab, ang, ig_pix=self.ig_pix) for lab in label]
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomEnlarge:
@@ -219,7 +222,10 @@ class RandomEnlarge:
                 images.append(func.enlarge_img(image[i], x, y, h_clip, w_clip))
             if label is not None:
                 label = [func.enlarge_img(lab, x, y, h_clip, w_clip) for lab in label]
-        return images, label
+            return images, label
+        else:
+            return image, label
+
 
 
 class RandomNarrow:
@@ -251,7 +257,9 @@ class RandomNarrow:
                 images.append(func.narrow_img(image[i], x_rate, y_rate))
             if label is not None:
                 label = [func.narrow_img(lab, x_rate, y_rate, ig_pix=self.ig_pix) for lab in label]
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomBlur:
@@ -279,7 +287,9 @@ class RandomBlur:
                 if i in self.img_do:
                     image[i][:, :, :self.band_num] = cv2.GaussianBlur(
                         image[i][:, :, :self.band_num], (self.ksize, self.ksize), 0)
-        return image, label
+            return image, label
+        else:
+            return image, label
 
 
 class RandomSharpening:
@@ -314,7 +324,9 @@ class RandomSharpening:
                 if i in self.img_do:
                     image[i][:, :, :self.band_num] += (
                         0.2 * cv2.filter2D(image[i][:, :, :self.band_num], -1, kernel=self.kernel))
-        return image, label
+            return image, label
+        else:
+            return image, label
 
 
 class RandomColor:
@@ -355,7 +367,9 @@ class RandomColor:
             for i in range(len(image)):
                 if i in self.img_do:
                     image[i][:, :, :self.band_num] = alpha * image[i][:, :, :self.band_num] + beta
-        return image, label
+            return image, label
+        else:
+            return image, label
 
 
 class RandomStrip:
@@ -392,7 +406,9 @@ class RandomStrip:
                 if i in self.img_do:
                     images.append(func.random_strip(
                         image[i], strip_num, self.direction, self.band_num))
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomFog:
@@ -425,7 +441,9 @@ class RandomFog:
             for i in range(len(image)):
                 if i in self.img_do:
                     images.append(func.add_fog(image[i], self.fog_range, self.band_num))
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomSplicing:
@@ -450,7 +468,9 @@ class RandomSplicing:
             images = []
             for i in range(len(image)):
                 images.append(func.random_splicing(image[i], self.direction, self.band_num))
-        return images, label
+            return images, label
+        else:
+            return image, label
 
 
 class RandomRemoveBand:
