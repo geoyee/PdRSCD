@@ -95,9 +95,9 @@ class DSIFN(nn.Layer):
         self.bn_sa5 = nn.BatchNorm(16)
         self.o5_conv4 = nn.Conv2D(16, num_classes, 1)
 
-    def forward(self, t1_input, t2_input):
-        t1_f_l3, t1_f_l8, t1_f_l15, t1_f_l22, t1_f_l29 = self.backbone(t1_input)
-        t2_f_l3, t2_f_l8, t2_f_l15, t2_f_l22, t2_f_l29 = self.backbone(t2_input)
+    def forward(self, images):
+        t1_f_l3, t1_f_l8, t1_f_l15, t1_f_l22, t1_f_l29 = self.backbone(images[0])
+        t2_f_l3, t2_f_l8, t2_f_l15, t2_f_l22, t2_f_l29 = self.backbone(images[1])
         x = paddle.concat([t1_f_l29, t2_f_l29], axis=1)
         x = self.ca1(x) * x
         x = self.o1_conv1(x)

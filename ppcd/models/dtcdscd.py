@@ -181,9 +181,9 @@ class CDNet(nn.Layer):
             layers.append(block(self.in_planes, planes))
         return nn.Sequential(*layers)
 
-    def forward(self, x, y):
+    def forward(self, images):
         # Encoder_1
-        x = self.firstconv(x)
+        x = self.firstconv(images[0])
         x = self.firstbn(x)
         x = F.relu(x)
         x = self.firstmaxpool(x)
@@ -204,7 +204,7 @@ class CDNet(nn.Layer):
         out1 = F.relu(out1)
         out1 = self.finalconv3(out1)
         # Encoder_2
-        y = self.firstconv(y)
+        y = self.firstconv(images[1])
         y = self.firstbn(y)
         y = F.relu(y)
         y = self.firstmaxpool(y)

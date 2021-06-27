@@ -9,6 +9,7 @@ from ppcd.transforms import Compose
 from ppcd.tools import random_out, slide_out, open_tif
 
 
+# TODO: 多输入切分
 def create_list(dataset_path, mode='train', shuffle=False, label_end='.png', labels_num=1):
     # labels_num表示有多少标签，默认为1
     save_path = os.path.join(dataset_path, (mode + '_list.txt'))
@@ -45,6 +46,7 @@ def create_list(dataset_path, mode='train', shuffle=False, label_end='.png', lab
 
 
 # 以场景分类数据组织方式来实现变化检测
+# TODO：多输入切分
 def split_create_list_class(dataset_path, split_rate=[8, 1, 1], shuffle=True):
     train_save_path = os.path.join(dataset_path, 'train_list.txt')
     eval_save_path = os.path.join(dataset_path, 'val_list.txt')
@@ -91,11 +93,12 @@ class CDataset(Dataset):
             fdatas = f.readlines()
         for fdata in fdatas:
             fdata = fdata.split(separator)
+            fdata[-1] = fdata[-1].strip()
             if is_infer:
-                self.datas.append([fdata[0], fdata[1].strip()])
+                self.datas.append(fdata)
             else:
                 # 如果是多标签，标签间用?隔开
-                self.datas.append([fdata[0], fdata[1], fdata[2].strip().split('?')])
+                self.datas.append([fdata[:-1], fdata[-1].split('?')])
         self.lens = len(self.datas)
         if shuffle == True:
             random.shuffle(self.datas)
@@ -106,32 +109,32 @@ class CDataset(Dataset):
     def __getitem__(self, index):
         if self.classes_num == 1:
             if self.is_infer:
-                A_path, B_path = self.datas[index]
+                img_path = self.datas[index]
             else:
-                A_path, B_path, lab = self.datas[index]
-            A_img, B_img = self.transforms(A_path, B_path, None)
+                img_path, lab = self.datas[index]
+            imgs = self.transforms(img_path, None)
         else:
             if self.is_infer:
-                A_path, B_path = self.datas[index]
-                A_img, B_img = self.transforms(A_path, B_path, None)
+                img_path = self.datas[index]
+                imgs = self.transforms(img_path, None)
             else:
-                A_path, B_path, labs_path = self.datas[index]
-                A_img, B_img, labs = self.transforms(A_path, B_path, labs_path)
-        A_img = A_img.transpose((2, 0, 1))
-        B_img = B_img.transpose((2, 0, 1))
-        name, _ = os.path.splitext(os.path.split(A_path)[1])
+                img_path, labs_path = self.datas[index]
+                imgs, labs = self.transforms(img_path, labs_path)
+        for i in range(len(imgs)):
+            imgs[i] = imgs[i].transpose((2, 0, 1))
+        name, _ = os.path.splitext(os.path.split(img_path[0])[1])
         if self.classes_num == 1:
             if self.is_infer:
-                return A_img, B_img, name
+                return imgs, name
             else:
-                return A_img, B_img, np.array(float(lab[0]))
+                return imgs, np.array(float(lab[0]))
         else:
             if self.is_infer:
-                return A_img, B_img, name
+                return imgs, name
             else:
                 for i in range(len(labs)):
                     labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
-                return A_img, B_img, labs
+                return imgs, labs
 
     def __len__(self):
         return self.lens
@@ -139,34 +142,37 @@ class CDataset(Dataset):
 
 # 大范围的遥感数据
 class BDataset(Dataset):
-    def __init__(self, t1_source, t2_source, lab_source=None, c_size=[512, 512], \
+    def __init__(self, img_source, lab_source=None, c_size=[512, 512], \
                  transforms=None, classes_num=2, out_mode='random', is_tif=True, geoinfo=None):
         '''
-            t1、t2以及lab (str/ndarray)
+            t_list以及lab (str/ndarray)
         '''
         self.classes_num = classes_num
         self.transforms = Compose(transforms=transforms, classes_num=classes_num)
-        if isinstance(t1_source, str) and isinstance(t2_source, str):
+        self.timg = []
+        if isinstance(img_source[0], str):
             if is_tif == False:
-                self.t1 = np.asarray(Image.open(t1_source))
-                self.t2 = np.asarray(Image.open(t2_source))
+                for i in range(len(img_source)):
+                    self.timg.append(np.asarray(Image.open(img_source[i])))
                 self.lab = np.asarray(Image.open(lab_source)) if lab_source is not None else None
                 self.geoinfo = None
             else:
-                self.t1, self.geoinfo = open_tif(t1_source, to_np=True)
-                self.t2, _ = open_tif(t2_source, to_np=True)
+                for i in range(len(img_source)):
+                    if i == 0:
+                        ti, self.geoinfo = open_tif(img_source[0], to_np=True)
+                    ti, _ = open_tif(img_source[i], to_np=True)
+                    self.timg.append(ti)
                 self.lab, _ = open_tif(lab_source, to_np=True) if lab_source is not None else None
         else:  # 直接传入图像
-            self.t1 = t1_source
-            self.t2 = t2_source
+            self.timg = img_source
             self.lab = lab_source if lab_source is not None else None
             self.geoinfo = geoinfo if geoinfo is not None else None
-        self.raw_size = [self.t1.shape[0], self.t1.shape[1]]  # 原始大小
+        self.raw_size = [self.timg[0].shape[0], self.timg[0].shape[1]]  # 原始大小
         self.c_size = c_size
         self.is_tif = True if geoinfo is not None else is_tif
         self.is_infer = True if lab_source is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
-        self.lens = ceil(self.t1.shape[0] / c_size[0]) * ceil(self.t1.shape[1] / c_size[1])
+        self.lens = ceil(self.timg[0].shape[0] / c_size[0]) * ceil(self.timg[0].shape[1] / c_size[1])
 
     def refresh_data(self):
         pass
@@ -174,9 +180,9 @@ class BDataset(Dataset):
     def __getitem__(self, index):
         # 数据分配
         if self.lab is None:
-            imgs = [self.t1, self.t2]
+            imgs = self.timg
         else:
-            imgs = [self.t1, self.t2, self.lab]
+            imgs = self.timg.append(self.lab)
         if self.out_mode == 'slide':
             H, W = self.raw_size
             row = ceil(H / self.c_size[0])
@@ -193,21 +199,21 @@ class BDataset(Dataset):
             res = slide_out(imgs, row, col, idx, self.c_size)
         else:
             res = random_out(imgs, self.c_size[0], self.c_size[1])
-        t1, t2 = res[:2]
+        tima = res[:-1]
         lab = res[-1] if len(res) == 3 else None
         # 数据增强
         if self.is_infer:
-            A_img, B_img = self.transforms(t1, t2, None)
+            tima = self.transforms(tima, None)
         else:
-            A_img, B_img, labs = self.transforms(t1, t2, lab)
-        A_img = A_img.transpose((2, 0, 1)).astype('float32')
-        B_img = B_img.transpose((2, 0, 1)).astype('float32')
+            tima, lab = self.transforms(tima, lab)
+        for i in range(len(tima)):
+            tima[i] = tima[i].transpose((2, 0, 1)).astype('float32')
         if self.is_infer == False:
-            for i in range(len(labs)):
-                labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
-            return A_img, B_img, labs
+            # for i in range(len(lab)):
+            lab = paddle.to_tensor(lab[np.newaxis, :, :], dtype='int64')
+            return tima, lab
         else:
-            return A_img, B_img
+            return tima
 
     def __len__(self):
         return self.lens
@@ -241,17 +247,19 @@ class DataLoader(object):
     def __next__(self):
         try:
             index = next(self.index)
-            t1s = []
-            t2s = []
+            ts = []
             ques = []
             start = index * self.batch_size
             end = (index + 1) * self.batch_size
             if end > len(self.cdataset):
                 end = len(self.cdataset)
             for i in range(start, end, 1):
-                t1, t2, que = self.cdataset[i]
-                t1s.append(t1)
-                t2s.append(t2)
+                timgs, que = self.cdataset[i]
+                for j in range(len(timgs)):
+                    try:
+                        ts[j].append(timgs[j])
+                    except:
+                        ts[j] = timgs[j]
                 ques.append(que)
             if isinstance(ques[0], list):
                 tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
@@ -259,6 +267,7 @@ class DataLoader(object):
             else:
                 if not isinstance(ques[0], str):
                     ques = paddle.to_tensor(ques)
-            return (paddle.to_tensor(t1s), paddle.to_tensor(t2s), ques)
+            ts = [paddle.to_tensor(ts[i]) for i in range(len(ts))]
+            return ts, ques
         except StopIteration:
             pass

@@ -33,8 +33,8 @@ def Eval(model,
     for val_load_data in tqdm(eval_loader):
         if val_load_data is None:
             break
-        (val_A_img, val_B_img, val_lab) = val_load_data
-        val_pred_list = model(val_A_img, val_B_img)
+        val_img, val_lab = val_load_data
+        val_pred_list = model(val_img)
         tmp_pred = []
         tmp_lab = []
         # 没有变化区标签的就不评估

@@ -139,9 +139,9 @@ class SNUNet(nn.Layer):
             elif isinstance(sublayer, (nn.BatchNorm, nn.SyncBatchNorm)):
                 kaiming_normal_init(sublayer.weight)
 
-    def forward(self, xA, xB):
-        xA_0, xA_1, xA_2, xA_3, _ = self.encoder(xA)
-        xB_0, xB_1, xB_2, xB_3, xB_4 = self.encoder(xB)
+    def forward(self, images):
+        xA_0, xA_1, xA_2, xA_3, _ = self.encoder(images[0])
+        xB_0, xB_1, xB_2, xB_3, xB_4 = self.encoder(images[1])
         x_cont = [
             paddle.concat([xA_0, xB_0], axis=1),
             paddle.concat([xA_1, xB_1], axis=1),

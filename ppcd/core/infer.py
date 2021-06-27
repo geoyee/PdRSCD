@@ -25,8 +25,8 @@ def Infer(model,
     for idx, infer_load_data in enumerate(infer_loader):
         if infer_load_data is None:
             break
-        (A_img, B_img, name) = infer_load_data
-        pred_list = model(A_img, B_img)
+        img, name = infer_load_data
+        pred_list = model(img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]
@@ -67,8 +67,8 @@ def Slide_Infer(model,
     for infer_load_data in tqdm(infer_loader):
         if infer_load_data is None:
             break
-        (A_img, B_img) = infer_load_data
-        pred_list = model(A_img, B_img)
+        img = infer_load_data
+        pred_list = model(img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]

@@ -46,9 +46,9 @@ def Train(model,
                 batch_start = time.time()  # batch计时
                 if train_load_data is None:
                     break
-                (A_img, B_img, lab) = train_load_data
+                img, lab = train_load_data
                 iters += 1
-                pred_list = model(A_img, B_img)
+                pred_list = model(img)
                 # img = paddle.concat([A_img, B_img], axis=1)
                 # pred_list = model(img)
                 loss_list = loss_computation(

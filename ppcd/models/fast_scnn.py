@@ -23,10 +23,11 @@ class FastSCNN(nn.Layer):
     def __init__(self,
                  in_channels=3,
                  num_classes=2,
+                 num_image=2,
                  enable_auxiliary_loss=False,
                  align_corners=False):
         super().__init__()
-        self.learning_to_downsample = LearningToDownsample(in_channels, 32, 48, 64)
+        self.learning_to_downsample = LearningToDownsample(num_image * in_channels, 32, 48, 64)
         self.global_feature_extractor = GlobalFeatureExtractor(
             in_channels=64,
             block_channels=[64, 96, 128],
@@ -41,9 +42,9 @@ class FastSCNN(nn.Layer):
         self.enable_auxiliary_loss = enable_auxiliary_loss
         self.align_corners = align_corners
 
-    def forward(self, x1, x2):
+    def forward(self, images):
         logit_list = []
-        x = paddle.concat([x1, x2], axis=1)
+        x = paddle.concat(images, axis=1)
         input_size = x.shape[2:]
         higher_res_features = self.learning_to_downsample(x)
         x = self.global_feature_extractor(higher_res_features)
