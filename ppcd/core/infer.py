@@ -30,10 +30,15 @@ def Infer(model,
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]
-        if num_class != 1:
-            save_img = (paddle.argmax(pred_list[0], axis=1).squeeze().numpy() * 255).astype('uint8')
+        if num_class == 2:
+            save_img = (paddle.argmax(pred_list[0], axis=1). \
+                            squeeze().numpy() * 255).astype('uint8')
+        elif num_class == 1:
+            save_img = ((pred_list[0] > threshold).numpy(). \
+                             astype('uint8') * 255).reshape([H, W])
         else:
-            save_img = ((pred_list[0] > threshold).numpy().astype('uint8') * 255).reshape([H, W])
+            save_img = (paddle.argmax(pred_list[0], axis=1). \
+                            squeeze().numpy()).astype('uint8')
         save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
         print('[Infer] ' + str(idx + 1) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)
