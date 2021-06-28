@@ -44,6 +44,8 @@ class Compose:
                                                is_lab=True, classes_num=self.classes_num))
                 else:
                     tlabs.append(labs[i])
+        else:
+            tlabs = None
         # 数据增强
         if self.transforms is not None:
             for op in self.transforms:

@@ -120,9 +120,6 @@ class CDataset(Dataset):
             else:
                 img_path, labs_path = self.datas[index]
                 imgs, labs = self.transforms(img_path, labs_path)
-        # TODO：为什么出现
-        if isinstance(imgs, tuple):
-            imgs = imgs[0]
         for i in range(len(imgs)):
             imgs[i] = imgs[i].transpose((2, 0, 1))
         name, _ = os.path.splitext(os.path.split(img_path[0])[1])
@@ -143,7 +140,7 @@ class CDataset(Dataset):
         return self.lens
 
 
-# 大范围的遥感数据
+# 大范围的遥感数据（目前只支持一个label）
 class BDataset(Dataset):
     def __init__(self, img_source, lab_source=None, c_size=[512, 512], \
                  transforms=None, classes_num=2, out_mode='random', is_tif=True, geoinfo=None):
@@ -163,7 +160,8 @@ class BDataset(Dataset):
                 for i in range(len(img_source)):
                     if i == 0:
                         ti, self.geoinfo = open_tif(img_source[0], to_np=True)
-                    ti, _ = open_tif(img_source[i], to_np=True)
+                    else:
+                        ti, _ = open_tif(img_source[i], to_np=True)
                     self.timg.append(ti)
                 self.lab, _ = open_tif(lab_source, to_np=True) if lab_source is not None else None
         else:  # 直接传入图像
@@ -176,16 +174,15 @@ class BDataset(Dataset):
         self.is_infer = True if lab_source is None else False
         self.out_mode = 'slide' if self.is_infer == True else out_mode
         self.lens = ceil(self.timg[0].shape[0] / c_size[0]) * ceil(self.timg[0].shape[1] / c_size[1])
+        if self.lab is not None:
+            self.timg.append(self.lab)
 
     def refresh_data(self):
         pass
 
     def __getitem__(self, index):
         # 数据分配
-        if self.lab is None:
-            imgs = self.timg
-        else:
-            imgs = self.timg.append(self.lab)
+        imgs = self.timg
         if self.out_mode == 'slide':
             H, W = self.raw_size
             row = ceil(H / self.c_size[0])
@@ -202,10 +199,15 @@ class BDataset(Dataset):
             res = slide_out(imgs, row, col, idx, self.c_size)
         else:
             res = random_out(imgs, self.c_size[0], self.c_size[1])
-        tima = res[:-1]
-        lab = res[-1] if len(res) == 3 else None
+        if len(res) != 1:
+            tima = res[:-1]
+            lab = res[-1] if self.is_infer == False else None
+            lab = [np.array(lab)]  # 需要为list
+        else:
+            tima = res
+            lab = None
         # 数据增强
-        if self.is_infer:
+        if self.is_infer or lab is None:
             tima = self.transforms(tima, None)
         else:
             tima, lab = self.transforms(tima, lab)
@@ -213,7 +215,8 @@ class BDataset(Dataset):
             tima[i] = tima[i].transpose((2, 0, 1)).astype('float32')
         if self.is_infer == False:
             # for i in range(len(lab)):
-            lab = paddle.to_tensor(lab[np.newaxis, :, :], dtype='int64')
+            #     lab[i] = paddle.to_tensor(lab[i][np.newaxis, :, :], dtype='int64')
+            lab[0] = paddle.to_tensor(lab[0][np.newaxis, :, :], dtype='int64')
             return tima, lab
         else:
             return tima
