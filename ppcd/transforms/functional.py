@@ -157,7 +157,7 @@ def add_fog(img, f_rag, band_num):
 # 一种波段计算
 def band_comput(img, b1, b2):
     img = img.astype('float32')
-    out = (img[:, :, b1] - img[:, :, b2]) / (img[:, :, b1] + img[:, :, b2])
+    out = (img[:, :, b1] - img[:, :, b2]) / ((img[:, :, b1] + img[:, :, b2]) + 1e-12)
     out = out.reshape([out.shape[0], out.shape[1], 1])
     img = np.concatenate((img, out), axis=-1)
     return img
