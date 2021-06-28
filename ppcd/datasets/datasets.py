@@ -89,16 +89,19 @@ class CDataset(Dataset):
         self.datas = []
         self.is_infer = is_infer
         self.classes_num = classes_num
+        self.num_image = None
         with open(data_list_path, 'r') as f:
             fdatas = f.readlines()
         for fdata in fdatas:
             fdata = fdata.split(separator)
             fdata[-1] = fdata[-1].strip()
             if is_infer:
-                self.datas.append(fdata[:-1])
+                self.datas.append(fdata)
+                self.num_image = len(fdata)
             else:
                 # 如果是多标签，标签间用?隔开
                 self.datas.append([fdata[:-1], fdata[-1].split('?')])
+                self.num_image = len(fdata[:-1])
         self.lens = len(self.datas)
         if shuffle == True:
             random.shuffle(self.datas)
