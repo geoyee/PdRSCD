@@ -53,7 +53,7 @@ class Compose:
         if tlabs is None:
             return timgs
         else:
-            tlabst = [tlab.astype('int64') for tlab in tlabs]
+            tlabst = [np.array(tlab).astype('int64') for tlab in tlabs]
             return timgs, tlabst
 
 

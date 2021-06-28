@@ -107,6 +107,7 @@ class CDataset(Dataset):
         random.shuffle(self.datas)
 
     def __getitem__(self, index):
+        labs = []
         if self.classes_num == 1:
             if self.is_infer:
                 img_path = self.datas[index]
@@ -119,7 +120,10 @@ class CDataset(Dataset):
                 imgs = self.transforms(img_path, None)
             else:
                 img_path, labs_path = self.datas[index]
-                imgs, labs = self.transforms(img_path, labs_path)
+                imgs, lbs = self.transforms(img_path, labs_path)
+                for lb in lbs:
+                    labs.append(np.array(lb))
+        labs = labs if labs != [] else None
         for i in range(len(imgs)):
             imgs[i] = imgs[i].transpose((2, 0, 1))
         name, _ = os.path.splitext(os.path.split(img_path[0])[1])
@@ -132,8 +136,12 @@ class CDataset(Dataset):
             if self.is_infer:
                 return imgs, name
             else:
+                # print(len(imgs), imgs[0].shape, imgs[1].shape)
+                # print(len(labs), labs[0].shape)
                 for i in range(len(labs)):
-                    labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
+                    # print(type(labs[i]), labs[i])
+                    # labs[i] = paddle.to_tensor(labs[i][np.newaxis, :, :], dtype='int64')
+                    labs[i] = labs[i][np.newaxis, :, :].astype('int64')
                 return imgs, labs
 
     def __len__(self):
@@ -148,6 +156,7 @@ class BDataset(Dataset):
             t_list以及lab (str/ndarray)
         '''
         self.classes_num = classes_num
+        self.num_image = len(img_source)
         self.transforms = Compose(transforms=transforms, classes_num=classes_num)
         self.timg = []
         if isinstance(img_source[0], str):
@@ -199,9 +208,9 @@ class BDataset(Dataset):
             res = slide_out(imgs, row, col, idx, self.c_size)
         else:
             res = random_out(imgs, self.c_size[0], self.c_size[1])
-        if len(res) != 1:
+        if self.is_infer == False:
             tima = res[:-1]
-            lab = res[-1] if self.is_infer == False else None
+            lab = res[-1]
             lab = [np.array(lab)]  # 需要为list
         else:
             tima = res
@@ -213,10 +222,11 @@ class BDataset(Dataset):
             tima, lab = self.transforms(tima, lab)
         for i in range(len(tima)):
             tima[i] = tima[i].transpose((2, 0, 1)).astype('float32')
+        # print('tima:', len(tima), tima[0].shape)
         if self.is_infer == False:
             # for i in range(len(lab)):
             #     lab[i] = paddle.to_tensor(lab[i][np.newaxis, :, :], dtype='int64')
-            lab[0] = paddle.to_tensor(lab[0][np.newaxis, :, :], dtype='int64')
+            lab[0] = lab[0][np.newaxis, :, :].astype('int64')
             return tima, lab
         else:
             return tima
@@ -246,7 +256,7 @@ class DataLoader(object):
             self.index = iter(range(ceil(len(self.cdataset) / self.batch_size)))
         else:
             self.index = iter(range(len(self.cdataset) // self.batch_size))
-        self.num_image = len(self.cdataset[0][0])
+        self.num_image = cdataset.num_image
 
     def __iter__(self):
         return self
@@ -261,20 +271,36 @@ class DataLoader(object):
             if end > len(self.cdataset):
                 end = len(self.cdataset)
             for i in range(start, end, 1):
-                timgs, que = self.cdataset[i]
+                idata = self.cdataset[i]
+                if isinstance(idata[0], list):
+                    timgs, que = idata
+                else:
+                    timgs = idata
+                    que = None
                 for j in range(len(timgs)):
                     try:
                         ts[j].append(timgs[j])
                     except:
                         ts[j] = [timgs[j]]
-                ques.append(que)
-            if isinstance(ques[0], list):
-                tmp = np.array(ques).transpose((1, 0, 2, 3, 4))
-                ques = [paddle.to_tensor(tmp[i, :, : ,:, :]) for i in range(tmp.shape[0])]
+                if que is not None:
+                    ques.append(que)
+            tsed = []
+            for i in range(len(ts)):
+                tsed.append(paddle.to_tensor(np.array(ts[i])))
+            ts = tsed
+            # 标签
+            if ques != []:
+                if isinstance(ques[0], list):
+                    ques = np.array(ques).transpose((1, 0, 2, 3, 4))
+                    quesed = []
+                    for i in range(ques.shape[0]):
+                        quesed.append(paddle.to_tensor(np.array(ques[i, :, : ,:, :])))
+                    ques = quesed
+                else:
+                    if not isinstance(ques[0], str):  # 如果是一个分类标签
+                        ques = paddle.to_tensor(ques)
+                return ts, ques
             else:
-                if not isinstance(ques[0], str):
-                    ques = paddle.to_tensor(ques)
-            ts = [paddle.to_tensor(ts[i]) for i in range(len(ts))]
-            return ts, ques
+                return ts
         except StopIteration:
             pass

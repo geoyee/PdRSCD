@@ -39,7 +39,7 @@ def Infer(model,
         else:
             save_img = (paddle.argmax(pred_list[0], axis=1). \
                             squeeze().numpy()).astype('uint8')
-        save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
+        save_path = os.path.join(save_img_path, (name[0] + '.png'))
         print('[Infer] ' + str(idx + 1) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)
 
@@ -58,7 +58,8 @@ def Slide_Infer(model,
     if infer_data.is_tif == True:
         geoinfo = infer_data.geoinfo
     # 数据读取器
-    infer_loader = paddle.io.DataLoader(infer_data, batch_size=1)  # TODO:如何统一
+    # infer_loader = paddle.io.DataLoader(infer_data, batch_size=1)
+    infer_loader = DataLoader(infer_data, batch_size=1)
     # 开始预测
     if save_img_path is not None:
         if os.path.exists(save_img_path) == False:
