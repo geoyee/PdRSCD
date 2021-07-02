@@ -12,7 +12,6 @@ PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨Pad
 4. [【ppcd快速入门】多光谱遥感影像分割](https://aistudio.baidu.com/aistudio/projectdetail/2130151)
 5. [【ppcd快速入门】多标签遥感图像变化检测（待更）]()
 6. [【ppcd快速入门】分类标签遥感变化检测（待更）]()
-7. [【ppcd快速入门】正在想（待更）]()
 
 ## 特点
 
