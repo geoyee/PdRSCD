@@ -25,8 +25,8 @@ def Infer(model,
     for idx, infer_load_data in enumerate(infer_loader):
         if infer_load_data is None:
             break
-        (A_img, B_img, name) = infer_load_data
-        pred_list = model(A_img, B_img)
+        img, name = infer_load_data
+        pred_list = model(img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]
@@ -39,7 +39,11 @@ def Infer(model,
         else:
             save_img = (paddle.argmax(pred_list[0], axis=1). \
                             squeeze().numpy()).astype('uint8')
+<<<<<<< HEAD
         save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
+=======
+        save_path = os.path.join(save_img_path, (name[0] + '.png'))
+>>>>>>> develop
         print('[Infer] ' + str(idx + 1) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)
 
@@ -58,7 +62,8 @@ def Slide_Infer(model,
     if infer_data.is_tif == True:
         geoinfo = infer_data.geoinfo
     # 数据读取器
-    infer_loader = paddle.io.DataLoader(infer_data, batch_size=1)  # TODO:如何统一
+    # infer_loader = paddle.io.DataLoader(infer_data, batch_size=1)
+    infer_loader = DataLoader(infer_data, batch_size=1)
     # 开始预测
     if save_img_path is not None:
         if os.path.exists(save_img_path) == False:
@@ -66,14 +71,14 @@ def Slide_Infer(model,
     model.eval()
     para_state_dict = paddle.load(params_path)
     model.set_dict(para_state_dict)
-    lens = len(infer_data)
+    # lens = len(infer_data)
     inf_imgs = []  # 保存块
     # for idx, infer_load_data in qenumerate(infer_loader):
     for infer_load_data in tqdm(infer_loader):
         if infer_load_data is None:
             break
-        (A_img, B_img) = infer_load_data
-        pred_list = model(A_img, B_img)
+        img = infer_load_data
+        pred_list = model(img)
         # img = paddle.concat([A_img, B_img], axis=1)
         # pred_list = model(img)
         num_class, H, W = pred_list[0].shape[1:]

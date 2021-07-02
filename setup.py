@@ -21,7 +21,7 @@ print(requires)
 
 setuptools.setup(
     name="ppcd",
-    version="0.1.6",
+    version="0.2.1",
     author="geoyee",
     author_email="geoyee@yeah.net",
     description="SDK about pdrscd",

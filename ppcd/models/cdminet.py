@@ -29,10 +29,10 @@ class CDMINet(nn.Layer):
             nn.Sigmoid()
         )
 
-    def forward(self, x1, x2):
-        N, _, xH, xW = x1.shape
-        H1 = self.unet(x1)
-        H2 = self.unet(x2)
+    def forward(self, images):
+        N, _, xH, xW = images[0].shape
+        H1 = self.unet(images[0])
+        H2 = self.unet(images[1])
         DI = paddle.abs(H1 - H2)
         H = DI.transpose((0, 2, 3, 1))
         H = H.reshape([N, -1, self.feature_channels])

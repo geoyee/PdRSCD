@@ -11,25 +11,30 @@ dataset
    ├── train  # 训练数据
    |     ├── A  # 时段一
    |     ├── B  # 时段二
+   |     ├── C  # 时段三
    |     └── label  # 变化标签
    ├── val  # 评估数据
    |     ├── A
    |     ├── B
+   |     ├── C  # 时段三
    |     └── label
    └── infer  # 预测数据
          ├── A
-         └── B
+         ├── B
+         └── C
          
 dataset
    ├── P  # 正样本数据
    |   ├── A  # 时段一
-   |   └── B  # 时段二
+   |   ├── B  # 时段二
+   |   └── C  # 时段三
    └── N  # 负样本数据
        ├── A
-       └── B
+       ├── B
+       └── C  # 时段三
 ```
 
 ### 1.2 大图数据
 
-可以参考入门项目（[【ppcd快速入门】大图滑框变化检测与拼接](https://aistudio.baidu.com/aistudio/projectdetail/2121793)）的数据使用方式。只需要有两期图像和标签，可以通过`split_eval`进行划分。在使用时将`Dataset`中的`big_map`设置为`True`即可。
+可以参考入门项目（[【ppcd快速入门】大图滑框变化检测与拼接](https://aistudio.baidu.com/aistudio/projectdetail/2121793)）的数据使用方式。支持大于一期的图像和标签，可以通过`split_eval`进行划分。在使用时将`Dataset`中的`big_map`设置为`True`即可。注意输入的图像数据为列表，哪怕只有一张图像也需要组成列表。
 

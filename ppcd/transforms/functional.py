@@ -5,6 +5,7 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+from scipy import io
 
 
 # 根据图像类型读取图像
@@ -39,6 +40,18 @@ def read_img(img_path, data_format, is_lab, classes_num=2):
             else:
                 jp_data = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
             return jp_data.astype('float32')
+        elif ext == '.mat':
+            arr = None
+            mat = io.loadmat(img_path)
+            for key in mat.keys():
+                if type(mat[key]) is np.ndarray:
+                    arr = mat[key]
+                    break
+            if is_lab:
+                arr = arr.transpose((0, 1))
+            else:
+                arr = arr.transpose((0, 1, 2))
+            return arr.astype('float32')
         else:
             raise Exception('Not support {} image format!'.format(ext))
 
@@ -144,7 +157,7 @@ def add_fog(img, f_rag, band_num):
 # 一种波段计算
 def band_comput(img, b1, b2):
     img = img.astype('float32')
-    out = (img[:, :, b1] - img[:, :, b2]) / (img[:, :, b1] + img[:, :, b2])
+    out = (img[:, :, b1] - img[:, :, b2]) / ((img[:, :, b1] + img[:, :, b2]) + 1e-12)
     out = out.reshape([out.shape[0], out.shape[1], 1])
     img = np.concatenate((img, out), axis=-1)
     return img

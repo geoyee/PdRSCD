@@ -25,12 +25,12 @@ class STANet(nn.Layer):
         self.netA = CDSA(in_channels=f_c, ds=1, mode=att_mode)
         self.pairwise_distance = nn.PairwiseDistance(keepdim=True)
 
-    def forward(self, t1, t2):
-        feat_t1 = self.netF(t1)
-        feat_t2 = self.netF(t2)
+    def forward(self, images):
+        feat_t1 = self.netF(images[0])
+        feat_t2 = self.netF(images[1])
         feat_t1, feat_t2 = self.netA(feat_t1, feat_t2)
         dist = self.pairwise_distance(feat_t1, feat_t2)  # 特征距离
-        dist = F.interpolate(dist, size=t1.shape[2:], mode='bilinear', align_corners=True)
+        dist = F.interpolate(dist, size=images[0].shape[2:], mode='bilinear', align_corners=True)
         return [dist]
 
 

@@ -1,21 +1,22 @@
 # PdRSCD
 
-[![Python 3.7](https://img.shields.io/badge/python-3.7+-yellow.svg)](https://www.python.org/downloads/release/python-370/) [![Paddle 2.1.0](https://img.shields.io/badge/Paddle-2.1.0-red.svg)](https://www.python.org/downloads/release/python-370/) [![License](https://img.shields.io/badge/license-Apache%202.0-orange.svg)](LICENSE) ![GitHub Repo stars](https://img.shields.io/github/stars/geoyee/PdRSCD)
+[![Python 3.7](https://img.shields.io/badge/python-3.7+-yellow.svg)](https://www.python.org/downloads/release/python-370/) [![Paddle 2.1.0](https://img.shields.io/badge/paddle-2.1+-red.svg)](https://www.python.org/downloads/release/python-370/) [![License](https://img.shields.io/badge/license-Apache%202.0-orange.svg)](LICENSE) ![GitHub Repo stars](https://img.shields.io/github/stars/geoyee/PdRSCD)
 
-PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨PaddlePaddle的遥感变化检测的项目，pypi包名为ppcd。可以像PaddleSeg一样快速完成变化检测任务。目前项目仍在开发中。
+PdRSCD（PaddlePaddle Remote Sensing Change Detection）是一个基于飞桨PaddlePaddle的遥感变化检测的项目，pypi包名为ppcd。目前0.2,版本，最新支持图像列表输入的训练和预测，如多期影像、多源影像甚至多期多源影像。可以快速完成分割、变化检测等任务。
 
 ## 在线项目实例
 
 1. [【ppcd快速入门】经典LEVIR数据集变化检测](https://aistudio.baidu.com/aistudio/projectdetail/2117261)
 2. [【ppcd快速入门】大图滑框变化检测与拼接](https://aistudio.baidu.com/aistudio/projectdetail/2136053)
 3. [【ppcd快速入门】多光谱遥感影像变化检测](https://aistudio.baidu.com/aistudio/projectdetail/2122781)
-4. [【ppcd快速入门】多标签遥感图像变化检测（待更）]()
-5. [【ppcd快速入门】分类标签遥感变化检测（待更）]()
-6. [【ppcd快速入门】正在想（待更）]()
+4. [【ppcd快速入门】多光谱遥感影像分割](https://aistudio.baidu.com/aistudio/projectdetail/2130151)
+5. [【ppcd快速入门】多标签遥感图像变化检测（待更）]()
+6. [【ppcd快速入门】分类标签遥感变化检测（待更）]()
+7. [【ppcd快速入门】正在想（待更）]()
 
 ## 特点
 
-1. 适应两期图像的读取和增强，支持jpg、tmp、tif和npy等格式，支持多光谱/波段
+1. 适应$N(N\ge1)$期图像的读取和增强，支持jpg、tmp、tif和npy等格式，支持多光谱/波段
 2. 有更多有特色的数据增强
 3. 适应分割图标签、分类标签以及多标签（分割+变化标签）
 4. 网络多返回、多标签和多损失之间的组合
@@ -70,13 +71,13 @@ sys.path.append('pd-rscd')  # 加载环境变量
 
 ## 说明
 
-1. 当前更新后需要在PaddlePaddle2.1.0上运行，否则会卡在DataLoader上。除此之外DataLoader可能还存在问题，例如在一个CPU项目上卡住了，不知道原因，建议在2.1.0及以上版本的GPU设备上运行（至少AI Studio的GPU肯定是没问题的）。
+1. 当前更新后需要在PaddlePaddle2.1.0及以上上运行，否则可能会卡在DataLoader上。除此之外DataLoader可能还存在问题，例如在一个CPU项目上卡住了，不知道原因，建议在2.1.0及以上版本的GPU设备上运行（至少AI Studio的GPU肯定是没问题的）。
 2. 由于GDAL无法直接通过pip安装，所以如果需要使用GDAL的地方目前需要自行安装GDAL。
 
 ## 后续重点
 
-1. 支持$N(N\ge1)$张输入数据，将分割、多期变化检测与多源数据任务结合。
-2. 支持ArcGIS shp的输入输出。
+- [ ] 添加多源数据输入，栅格得分结果输出的空间分析功能（问号）
+- [ ] 添加将tif转为shp以及读取shp进行训练。预测（尽量）
 
 ## 相关链接
 
