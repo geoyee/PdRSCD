@@ -590,7 +590,7 @@ class ExchangeTime:
 # ----- histogram -----
 class HistogramMatching:
     """
-    将第二时段的直方图规定到第一时段
+    将后续时段的直方图规定到第一时段
     Args:
         bit_num (int): 图像的位数，默认为8
         band_num (int): 操作的波段数，默认为3
