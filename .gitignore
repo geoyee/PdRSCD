@@ -2,6 +2,8 @@
 
 __pycache__
 
+# test
+test
 test_img
 *.tif
 *.tif.aux.xml
@@ -12,7 +14,6 @@ test_img
 *.tiff.ovr
 *.tiff.enp
 *.jpg
-
 test.py
 
 output_model

@@ -11,3 +11,4 @@ prettytable
 # paddlepaddle>=2.1.0
 # paddlepaddle-gpu>=2.1.0
 # GDAL==3.1.3
+# geopandas
