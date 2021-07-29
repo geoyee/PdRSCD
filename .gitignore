@@ -30,3 +30,6 @@ ppcd.egg-info
 build
 whl
 *. whl
+
+Note
+test

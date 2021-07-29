@@ -39,11 +39,7 @@ def Infer(model,
         else:
             save_img = (paddle.argmax(pred_list[0], axis=1). \
                             squeeze().numpy()).astype('uint8')
-<<<<<<< HEAD
-        save_path = os.path.join(save_img_path, (name[0] + '.jpg'))
-=======
         save_path = os.path.join(save_img_path, (name[0] + '.png'))
->>>>>>> develop
         print('[Infer] ' + str(idx + 1) + '/' + str(lens) + ' file_path: ' + save_path)
         cv2.imwrite(save_path, save_img)
 
